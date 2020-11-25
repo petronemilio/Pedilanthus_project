@@ -1,0 +1,7 @@
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install()
+BiocManager::install("ggtree")
+biocLite("BiocUpgrade")
+source("https://bioconductor.org/biocLite.R")
+biocLite("BiocUpgrade")
