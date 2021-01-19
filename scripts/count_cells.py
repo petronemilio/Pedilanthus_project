@@ -1,34 +1,3 @@
-#!/usr/bin/python
-#-*- coding: utf-8 -*-
-from collections import defaultdict
-import pandas as pd
-import numpy as np
-
-#print(my_list)
-# you may also want to remove whitespace characters like `\n` at the end of each line
-#Write function to calculate number of each cell type
-
-def count_cells(file):
-    """Crear una lista con las longitudes del número de células
-       por fila (cell file) """
-    #read as list input file
-    my_list = file.readlines()
-    file = [x.strip() for x in my_list]
-    vasos = 0
-    fibras = 0
-    parenquima = 0
-    radio = 0
-    cell_counts={}    
-    for x in my_list: 
-        vasos += x.count('V')
-        fibras += x.count('F')
-        parenquima += x.count('P')
-        radio += x.count('R')
-    cell_counts["Vasos"]= vasos
-    cell_counts["Fibras"]= fibras
-    cell_counts["Parénquima"]= parenquima
-    cell_counts["Radios"]= radio
-    return cell_counts
 #Create dictionary of dictionaries
 all_cells = {}
 # Open the file and evaluate safe every line in a list of P. bracteatus
