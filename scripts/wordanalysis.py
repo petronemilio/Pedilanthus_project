@@ -1,8 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
-
 ###Here we have functions to count words and analyse cell files from secondary xylem derived cells.
- 
+import math
 def count_cells(file):
     """
     Returns list with number of cells per wood sample.
