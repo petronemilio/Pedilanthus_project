@@ -95,5 +95,25 @@ def euc_dist(x, y):
     distance = math.sqrt(ss)
     
     return distance
-#Como sumar las palabras que no aparecen                     
+#Como sumar las palabras que no aparecen   
+
+
+def lzcomprdist(string):
+    """This function returns the Lempl ziv
+    compression distance of each file of cells"""
+    keys_dict = {}
+    ind = 0
+    inc = 1
+    while True:
+        if not (len(string) >= ind+inc):
+            break
+        sub_str = string[ind:ind + inc]
+    #print(sub_str,ind,inc)
+        if sub_str in keys_dict:
+            inc += 1
+        else:
+            keys_dict[sub_str] = 0
+            ind += inc
+            inc = 1
+    return(len(keys_dict))                  
 
