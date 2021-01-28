@@ -45,8 +45,14 @@ lengths_array = np.random.randint(10,150,120)
 random_files = []
 for i in lengths_array:
     random_files.append(createLSystem(i,'A'))
-
-with open('../Data/probLsystem.txt', 'w') as output:
+#Remove A and B
+for x, y in enumerate(random_files): 
+    random_files[x] = y.replace('B', '') 
+for x, y in enumerate(random_files):     
+    random_files[x] = y.replace('A', '') 
+    
+####    
+with open('../Data/Cell_files_data/probLsystem_edited_cells.txt', 'w') as output:
     for row in random_files:
         output.write(str(row) + '\n')
 
@@ -123,8 +129,13 @@ lengths_array = np.random.randint(10,150,120)
 random_files = []
 for i in lengths_array:
     random_files.append(clsystemx('AB',rules_ctsens,i))
-
-with open('../Data/contextxericLsystem.txt', 'w') as output:
+#Remove A and B
+for x, y in enumerate(random_files): 
+    random_files[x] = y.replace('B', '') 
+for x, y in enumerate(random_files):     
+    random_files[x] = y.replace('A', '') 
+    
+with open('../Data/Cell_files_data/contextxericLsystem_edited_cells.txt', 'w') as output:
     for row in random_files:
         output.write(str(row) + '\n')
 
@@ -200,8 +211,13 @@ lengths_array = np.random.randint(10,150,120)
 random_files = []
 for i in lengths_array:
     random_files.append(clsystemm('AB',rules_ctsens,i))
-
-with open('../Data/contextmesicLsystem.txt', 'w') as output:
+#Remove A and B
+for x, y in enumerate(random_files): 
+    random_files[x] = y.replace('B', '') 
+for x, y in enumerate(random_files):     
+    random_files[x] = y.replace('A', '') 
+    
+with open('../Data/Cell_files_data/contextmesicLsystem_edited_cells.txt', 'w') as output:
     for row in random_files:
         output.write(str(row) + '\n')
 
