@@ -5,8 +5,9 @@ library(ggplot2)
 library(wesanderson)
 library(ggstance)
 library(vioplot)
+library(plot3D)
 ##sET WORKING DIRECTORY
-setwd("Doctorado/scripts/")
+getwd()
 ###
 ############################################
 #Graficar la distribución de las longitudes de las series.
@@ -164,85 +165,98 @@ ggplot(tipos_fusiformes) +
 lvls <- names(sort(tapply(tipos_fusiformes$time == "Fibras", tipos_fusiformes$especies_por_muestra, mean)))
 lvls
 ggplot(tipos_fusiformes)+ geom_bar(aes(factor(especies_por_muestra, levels = lvls),
-           stat="identity") 
-  geom_bar(position = "fill") + scale_y_continuous(labels = count)
+           stat="identity")) 
+  #geom_bar(position = "fill") + scale_y_continuous(labels = count)
 
 #ggplot(data=dat1, aes(x=time, y=total_bill, fill=sex)) +
 #  geom_bar(stat="identity")
 
 ##########Graficar los indices de homogeneídad
 ##########
-p_bracteatus<-read.csv("../Data/Pedilanthus/P_bracteatus/cell_homogeneity.txt", sep = " ")
-p_bracteatus<-p_bracteatus[complete.cases(p_bracteatus), ]
+homogenity_index <- read.csv("Data/homogentiy_index.csv")
+#Take files as factor  
+files <- levels(as.factor(homogenity_index$X0))
+#Add species to the homogenity index
+species<- c("E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
+            "E. calcarata","E. calcarata","E. finkii","E. conzattii","E. cyri",
+            "E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
+            "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana",
+            "E. tithymaloides","E. tithymaloides","E. personata","E. personata",
+            "L-system")
+habit <- c("xeric","xeric","mesic","mesic",
+           "mesic","mesic","mesic","mesic","xeric",
+           "mesic","xeric","xeric","L-systemCSM","L-systemCSX","xeric",
+           "xeric","xeric","xeric","xeric","xeric","xeric","L-system")
+##Make data frame for files
+species.id <- as.data.frame(cbind(files,species,habit))
+match.id <- match(homogenity_index$X0,species.id$files)
 #
-p_calcarata_896<-read.csv("../Data/Pedilanthus/P_calcaratus/896_cell_homogeneity.txt",sep=" ")
-p_calcarata_892<-read.csv("../Data/Pedilanthus/P_calcaratus/892_cell_homogeneity.txt",sep=" ")
-p_calcarata_896<-p_calcarata_896[complete.cases(p_calcarata_896), ]
-p_calcarata_892<-p_calcarata_892[complete.cases(p_calcarata_892), ]
-#
-p_colligata_867<- read.csv("../Data/Pedilanthus/P_colligata/867_cell_homogeneity.txt",sep=" ")
-p_colligata_867<-p_colligata_867[complete.cases(p_colligata_867), ]
-#
-p_diazluna_epm10<-read.csv("../Data/Pedilanthus/P_diazluna/EPM10_cell_homogeneity.txt", sep=" ")
-p_diazluna_epm11<-read.csv("../Data/Pedilanthus/P_diazluna/EPM11_cell_homogeneity.txt", sep=" ")
-p_diazluna_epm12<-read.csv("../Data/Pedilanthus/P_diazluna/EPM12_cell_homogeneity.txt", sep=" ")
-p_diazluna_epm10<-p_diazluna_epm10[complete.cases(p_diazluna_epm10), ]
-p_diazluna_epm11<-p_diazluna_epm11[complete.cases(p_diazluna_epm11), ]
-p_diazluna_epm12<-p_diazluna_epm12[complete.cases(p_diazluna_epm12), ]
-#
-p_finkii917<-read.csv("../Data/Pedilanthus/P_finkii/917_cell_homogeneity.txt", sep=" ")
-p_finkii917<-p_finkii917[complete.cases(p_finkii917), ]
-#
-p_tithy_5<-read.csv("../Data/Pedilanthus/P_tithymaloides/EPM5_cell_homogeneity.txt", sep=" ")
-p_tithy_6<-read.csv("../Data/Pedilanthus/P_tithymaloides/EPM6_cell_homogeneity.txt", sep=" ")
-p_tithy_5<-p_tithy_5[complete.cases(p_tithy_5), ]
-p_tithy_6<-p_tithy_6[complete.cases(p_tithy_6), ]
-#
-p_tomentellus<-read.csv("../Data/Pedilanthus/P_tomentellus/973_cell_homogeneity.txt",sep=" ")
-p_tomentellus<-p_tomentellus[complete.cases(p_tomentellus),]
+homogenity_index$sp <- as.character(species.id$species[match.id])
+#    
+homogenity_index$habit <- as.character(species.id$habit[match.id])
+  
+ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=sp))+
+  geom_point()
 
-########
-p_bracteatus<-cbind(rep("E. bracteata",nrow(p_bracteatus)), rep("845", nrow(p_bracteatus)),p_bracteatus)
+ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=habit))+
+  geom_point()
 #
-p_calcarata_892<-cbind(rep("E. calcarata",nrow(p_calcarata_892)), rep("892", nrow(p_calcarata_892)),p_calcarata_892)
-p_calcarata_896<-cbind(rep("E. calcarata",nrow(p_calcarata_896)), rep("896", nrow(p_calcarata_896)),p_calcarata_896)
+ggplot(homogenity_index, aes(x=storage, y=support, colour=habit))+
+  geom_point()
+ggplot(homogenity_index, aes(x=conductivity, y=support, colour=habit))+
+  geom_point()
+######
+wes_palettes
+scatter3D(homogenity_index$storage,homogenity_index$conductivity,
+          homogenity_index$support, 
+          col.var = as.integer(as.factor(homogenity_index$habit)), 
+          col = c("#85D4E3", "#F4B5BD", "#9C964A", "#CDC08C", "#FAD77B"),
+          pch = 18, ticktype = "detailed",
+          colkey = list(at = c(2,3,4,5,6)), side = 1,addlines = TRUE, length = 0.5, width = 0.5,
+          labels = c("L-system", "L-systemCSM", "L-systemCSX","mesic","xeric"),
+          phi = 0, bty ="g",
+          main = "Homogenity index", xlab = "Storage index",
+          ylab ="Conductivity index", zlab = "Support index")
+library(rgl)
+options(rgl.printRglwidget = TRUE)
+#plot3d(homogenity_index$storage,homogenity_index$conductivity,
+ #      homogenity_index$support)
+#text3d(homogenity_index$storage,homogenity_index$conductivity,
+ #      homogenity_index$support,as.factor(homogenity_index$habit))
+#points3d(homogenity_index$storage,homogenity_index$conductivity,
+#         homogenity_index$support, size = 5)
+
+scatter3D(homogenity_index$storage,homogenity_index$conductivity,
+          homogenity_index$support, phi = 0, bty ="g",
+          id=list(method = "mahal", n = length(as.factor(homogenity_index$habit)),
+                  labels = as.factor(homogenity_index$habit)))
 #
-p_colligata_867<-cbind(rep("E. colligata",nrow(p_colligata_867)), rep("867", nrow(p_colligata_867)),p_colligata_867)
+plot3d(geometry[,1],geometry[,2],geometry[,3])
+text3d(geometry[,1],geometry[,2],geometry[,3],rownames(geometry))
+points3d(geometry[,1],geometry[,2],geometry[,3], size = 5)
+
 #
-p_diazluna_epm10<-cbind(rep("E. diazlunana",nrow(p_diazluna_epm10)),rep("10",nrow(p_diazluna_epm10)),p_diazluna_epm10)
-p_diazluna_epm11<-cbind(rep("E. diazlunana",nrow(p_diazluna_epm11)),rep("11",nrow(p_diazluna_epm11)),p_diazluna_epm11)
-p_diazluna_epm12<-cbind(rep("E. diazlunana",nrow(p_diazluna_epm12)),rep("12",nrow(p_diazluna_epm12)),p_diazluna_epm12)
-#
-p_finkii917<-cbind(rep("E. finkii",nrow(p_finkii917)),rep("917",nrow(p_finkii917)),p_finkii917)
-#
-p_tithy_5<-cbind(rep("E. tithymaloides",nrow(p_tithy_5)),rep("5",nrow(p_tithy_5)),p_tithy_5)
-p_tithy_6<-cbind(rep("E. tithymaloides",nrow(p_tithy_6)),rep("6",nrow(p_tithy_6)),p_tithy_6)
-#
-p_tomentellus<-cbind(rep("E. cyri",nrow(p_tomentellus)),rep("5",nrow(p_tomentellus)),p_tomentellus)
-#
-###############
-names(p_bracteatus) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_calcarata_896) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_calcarata_892) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_colligata_867) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_diazluna_epm10) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_diazluna_epm11) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_diazluna_epm12) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_finkii917) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_tithy_5) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_tithy_6) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
-names(p_tomentellus) <- c("Especie","Individuo","Living/Death", "Conductive/Non-conductive")
+sp.974 <- subset(homogenity_index, homogenity_index$X0 == '974')  
+sp.883 <- subset(homogenity_index, homogenity_index$X0 == '883')  
+sp.probLsystem <- subset(homogenity_index, homogenity_index$X0 == 'probLsystem') 
+sp.contextmesicLsystem <- subset(homogenity_index, 
+                                 homogenity_index$X0 == 'contextmesicLsystem')
 
 
-pedilanthus<-rbind(p_calcarata_892,p_calcarata_896,p_bracteatus,
-                   p_colligata_867,p_diazluna_epm10,p_diazluna_epm11,
-                   p_diazluna_epm12, p_finkii917, p_tithy_5,p_tithy_6,
-                   p_tomentellus)
+ggplot(sp.974, aes(x=storage, y=conductivity, colour=X0))+
+  geom_point()
 
-ggplot(pedilanthus, aes(x=`Living/Death`, y=`Conductive/Non-conductive`, colour=`Especie`))+
-  geom_point()+ 
-  scale_color_manual(values=c("#c80966","#84de66","#8369e1","#d89816",
-                              "#0152a1","#005e18","#abb2ff"))+
-  theme_bw()
+ggplot(sp.883, aes(x=storage, y=conductivity, colour=X0))+
+  geom_point()
+
+ggplot(sp.probLsystem, aes(x=storage, y=conductivity, colour=X0))+
+  geom_point()
+
+
+ggplot(sp.contextmesicLsystem, aes(x=storage, y=conductivity, colour=X0))+
+  geom_point()
+#scale_color_manual(values=c("#c80966","#84de66","#8369e1","#d89816",
+ #                             "#0152a1","#005e18","#abb2ff"))+
+  #theme_bw()
 scale_
 

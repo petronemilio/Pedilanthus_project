@@ -2,88 +2,206 @@
 #-*- coding: utf-8 -*-
 
 # Open the file and evaluate safe every line in a list
-f=open(input('Ingresa el nombre del archivo ce células:'))
-#Crear una lista con cada una de las líneas.
-my_list = f.readlines()
-# you may also want to remove whitespace characters like `\n` at the end of each line
-my_list = [x.strip() for x in my_list]
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
 
-#Convertir todos los caracteres en mayúscula
-my_list = [x.upper() for x in my_list]
+#import matplotlib.pyplot as plt
+#import numpy as np
+import math
+import wordanalysis
+import os
+import re
+import pandas as pd
+import itertools
+import csv
+import numpy as np
 
-#Crear las listas donde se guardaran las secuencias en código binario
-#vivo_binarias para las células vivas y muertas
-vivo_binarias=[] #P=1, V y F= 0
-#cond_binarias=[] Conductor vs no conductor
-cond_binarias=[] #V=1, P y F= 0
-#sosten 
-sost_binarias=[] #F=1, P y V= 0
+def conduc_index(string): 
+    """Function to transform a sequence of cells into
+    a binary sequence of 0 and 1 based on conducitve properties"""
+    c = ''
+    string += ' '
+    for z in range(0,len(string)):
+        if string[z] == 'F':    
+            c += '0'
+        elif string[z] == 'V':
+            c += '1'    
+        elif string[z] == 'P' and string[z+1] == 'V':
+            c += '1'
+        elif string[z] == 'P' and string[z-1] == 'V':
+            c += '1'
+        elif string[z] == 'P' and string[z+1] == 'F':
+            c += '0'
+        elif string[z] == 'P' and string[z-1] == 'F':
+            c += '0'
+    return(c)
 
-#Con un loop se trasnforman las cadenas a binarias dependiendo de el 
-#indice 
-y=0
-for i in my_list:
-    z=0
-    x='' # indice de vivas/muertas
-    a='' # indice de conductoras/noconductoras
-    s='' # indice de sosten/nososten	
-    for z in range(0,len(my_list[y])):
-        if my_list[y][z] == 'F':    
-            x += '0'
-            a += '0'
-            s += '1'
-        elif my_list[y][z] == 'V':
-            x += '0'
-            a += '1'
-            s += '0'
-        elif my_list[y][z] == 'P':   
-            x += '1'
-            a += '0'
-            s += '0'
-        z += 1
-    vivo_binarias.append(x)
-    cond_binarias.append(a)
-    sost_binarias.append(s)
-    y+=1
+def storage_index(string):
+    c = ''
+    string += ' '
+    for z in range(0,len(string)):
+        if string[z] == 'P':    
+            c += '1'
+        elif string[z] == 'V':
+            c += '0'    
+        elif string[z] == 'F' and string[z+1] == 'P':
+            c += '1'
+        elif string[z] == 'F' and string[z-1] == 'P':
+            c += '1'
+        elif string[z] == 'F' and string[z+1] == 'V':
+            c += '0'
+        elif string[z] == 'F' and string[z-1] == 'V':
+            c += '0'
+    return(c)
+
+def support_index(string):
+    c = ''
+    string += ' '
+    for z in range(0,len(string)):
+        if string[z] == 'F':    
+            c += '1'
+        elif string[z] == 'V':
+            c += '0'    
+        elif string[z] == 'P':
+            c += '0'
+    return(c)
+
+#First define the list of files that have the cell files
+path = '../Data/Cell_files_data/'
+files = os.listdir(path)
+filenames = {} #Create a dictionary to save paths for all data cells
+for i in files:
+    m = re.search(r'.*[^_edited_cells.txt]',i)
+    filenames[m.group()] = [i]
+
+#Loop to load the files of cells and append them in filenames
+my_vocabulary = set()
+for keys, values in filenames.items():
+    with open(path+values[0]) as f:
+        x = f.readlines()
+        filenames.setdefault(keys,[]).append(x)
+    values[1] = [x.strip() for x in values[1]]  #remove the /n 
+    values[1] = [x.upper() for x in values[1]]  #put all letters in upper
+    for s in values[1]:
+        for z in s:
+            my_vocabulary.add(z)
+            
+#Now dictoniary is ready for analysis
+#Quitar los radios y sin que se afecte el orden de las otras células
+for values in filenames.values(): 
+    values.append([])
+    for i in range(0,len(values[1])):
+        x = values[1][i].replace('R','')
+        if x == '':
+            pass
+        else:
+            values[2].append(x)
+
+##Create an empty dictionary to save the binary files
+conductivity_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    conductivity_code[list(filenames.keys())[i]]=[] #add key element to dict
+
+for k, v in filenames.items():
+    for z in v[1]:
+        conductivity_code[k].append(conduc_index(z)) 
+#Make it for the storage index
+storage_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    storage_code[list(filenames.keys())[i]]=[] #add key element to dict
+
+for k, v in filenames.items():
+    prueba_list=[]
+    for z in v[1]:
+        storage_code[k].append(storage_index(z))
+#Make it for the SUPPORT index
+support_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    support_code[list(filenames.keys())[i]]=[] #add key element to dict
+
+for k, v in filenames.items():
+    prueba_list=[]
+    for z in v[1]:
+        support_code[k].append(support_index(z))
+
 #Calcular el índice de homogeneidad
 def homogenity_index(string):
-    n01=0
-    n11=0
-    n0=0
-    n1=1
+    n01 = 0
+    n10 = 0
+    n11 = 0
+    n00 = 0
+    n0 = 0
+    n1 = 1
     for i in range(0,len(string)):
         if string[i:i+2] == '01':
-            n01+=1
+            n01 += 1
         elif string[i:i+2] == '10':
-            n01+=1
+            n10 += 1
         elif string[i:i+2] == '00':
-            n11+=1
+            n00 += 1
         elif string[i:i+2] == '11':
-            n11+=1
+            n11 += 1
     for i in range(0,len(string)): 
         if string[i]=='1':
-            n0+=1
+            n1 += 1
         if string[i]=='0':
-            n1+=1
+            n0 += 1
     if 0 in {n0,n1}:
         d=1
     elif 0 not in {n0,n1}:
-        d=(n01-n11)/(n0*n1)
+        d=((n00*n11)-(n10*n01))/(n0*n1)    
     return(d)
 
-vivo_values=[]
-cond_values=[]
-sost_values=[]
-for f in vivo_binarias:
-    vivo_values.append(homogenity_index(f))
-for i in cond_binarias:
-    cond_values.append(homogenity_index(i))
-for i in sost_binarias:
-    sost_values.append(homogenity_index(s))
+conductivity_index = {} #Empty dictionary to add values into
 
+for i in range(0,len(filenames.keys())):
+    conductivity_index[list(filenames.keys())[i]]=[] 
+for k, v in conductivity_code.items():
+    prueba_list=[]
+    for z in v:
+         conductivity_index[k].append(homogenity_index(z)) 
+#
+storage_index = {} #Empty dictionary to add values into
 
-fmt = '{:<8}{:<30}{}'
+for i in range(0,len(filenames.keys())):
+    storage_index[list(filenames.keys())[i]]=[] 
+for k, v in storage_code.items():
+    prueba_list=[]
+    for z in v:
+         storage_index[k].append(homogenity_index(z)) 
+#
+support_index = {} #Empty dictionary to add values into
 
-print(fmt.format('', 'Living-Death', 'Conductive-Non conductive'))
-for i, (name, grade) in enumerate(zip(vivo_values, cond_values)):
-    print(fmt.format(i, name, grade))
+for i in range(0,len(filenames.keys())):
+    support_index[list(filenames.keys())[i]]=[] 
+for k, v in support_code.items():
+    prueba_list=[]
+    for z in v:
+         support_index[k].append(homogenity_index(z)) 
+
+#Create a pandas data frame
+df = pd.DataFrame(columns=['sp'])
+for k,v in storage_index.items():
+    x = np.repeat(k,len(v))
+    y = np.array(v)
+    df = df.append(x.tolist())
+
+indexall=[]
+for k,v in storage_index.items():    
+    for i in range(0,len(v)):
+        indexall.append(v[i])
+df["storage"]= indexall
+indexall=[]
+for k,v in conductivity_index.items():    
+    for i in range(0,len(v)):
+        indexall.append(v[i])
+df["conductivity"]= indexall
+
+indexall=[]
+for k,v in support_index.items():    
+    for i in range(0,len(v)):
+        indexall.append(v[i])
+df["support"]= indexall
+
+df.to_csv('../Data/homogentiy_index.csv')
+
