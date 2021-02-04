@@ -6,9 +6,17 @@ library(wesanderson)
 library(ggstance)
 library(vioplot)
 library(plot3D)
+library(scatterplot3d)
 ##sET WORKING DIRECTORY
 getwd()
 ###
+
+#####Save palettes for graphs
+pal1 <- wes_palette("BottleRocket2")
+pal2 <- wes_palette("Rushmore1")
+pal3 <- wes_palette("Darjeeling1")
+pal4 <- wes_palette("FantasticFox1")
+my_palette <- c(pal1,pal2,pal3,pal4)
 ############################################
 #Graficar la distribución de las longitudes de las series.
 p_brac_long<-read.csv("../Data/Pedilanthus/P_bracteatus/bracteatus_length_filecells.csv",
@@ -171,8 +179,8 @@ ggplot(tipos_fusiformes)+ geom_bar(aes(factor(especies_por_muestra, levels = lvl
 #ggplot(data=dat1, aes(x=time, y=total_bill, fill=sex)) +
 #  geom_bar(stat="identity")
 
-##########Graficar los indices de homogeneídad
-##########
+##########Graficar los indices de homogeneídad ##########
+#
 homogenity_index <- read.csv("Data/homogentiy_index.csv")
 #Take files as factor  
 files <- levels(as.factor(homogenity_index$X0))
@@ -196,35 +204,55 @@ homogenity_index$sp <- as.character(species.id$species[match.id])
 homogenity_index$habit <- as.character(species.id$habit[match.id])
   
 ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=sp))+
-  geom_point()
+  geom_point() #+ scale_color_manual(values=my_palette)
 
+pdf("Figures/storage_conductivity.pdf") # Para guardar en PDF
 ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=habit))+
-  geom_point()
+  geom_point() + scale_color_manual(values=pal3)
+dev.off()
 #
+pdf("Figures/storage_support.pdf") # Para guardar en PDF
 ggplot(homogenity_index, aes(x=storage, y=support, colour=habit))+
-  geom_point()
+  geom_point() + scale_color_manual(values=pal3)
+dev.off()
+#
+pdf("Figures/support_conductivity.pdf") # Para guardar en PDF
 ggplot(homogenity_index, aes(x=conductivity, y=support, colour=habit))+
-  geom_point()
+  geom_point() +  scale_color_manual(values=pal3)
+dev.off()
 ######
-wes_palettes
+pdf("Figures/3dscatter.pdf")
 scatter3D(homogenity_index$storage,homogenity_index$conductivity,
           homogenity_index$support, 
           col.var = as.integer(as.factor(homogenity_index$habit)), 
-          col = c("#85D4E3", "#F4B5BD", "#9C964A", "#CDC08C", "#FAD77B"),
-          pch = 18, ticktype = "detailed",
+          col = pal3, 
+          pch = 4, ticktype = "detailed",
           colkey = list(at = c(2,3,4,5,6)), side = 1,addlines = TRUE, length = 0.5, width = 0.5,
           labels = c("L-system", "L-systemCSM", "L-systemCSX","mesic","xeric"),
           phi = 0, bty ="g",
           main = "Homogenity index", xlab = "Storage index",
           ylab ="Conductivity index", zlab = "Support index")
-library(rgl)
-options(rgl.printRglwidget = TRUE)
-#plot3d(homogenity_index$storage,homogenity_index$conductivity,
- #      homogenity_index$support)
-#text3d(homogenity_index$storage,homogenity_index$conductivity,
- #      homogenity_index$support,as.factor(homogenity_index$habit))
-#points3d(homogenity_index$storage,homogenity_index$conductivity,
-#         homogenity_index$support, size = 5)
+dev.off()
+
+pal3 <-pal3[as.numeric(as.factor(homogenity_index$habit))]
+pdf("Figures/morphospace1.pdf")
+scatterplot3d(homogenity_index$storage,homogenity_index$conductivity,
+          homogenity_index$support, angle=55, pch=16, color=pal3,
+          main="3D Scatter Plot",xlab = "Storage index",ylab = "Conductivity index",
+          zlab = "Support index") 
+legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
+       col =levels(as.factor(pal3)) , pch = 16, inset =-0.4,xpd=TRUE,horiz=TRUE)
+dev.off()
+
+pdf("Figures/morphospace2.pdf")
+scatterplot3d(homogenity_index$storage,homogenity_index$support,
+              homogenity_index$conductivity,
+               angle=55, pch=16, color=pal3,
+              main="3D Scatter Plot",xlab = "Storage index",ylab = "Support index",
+              zlab = "Conductivity index") 
+legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
+       col =levels(as.factor(pal3)) , pch = 16, inset =-0.4,xpd=TRUE,horiz=TRUE)
+dev.off()
 
 scatter3D(homogenity_index$storage,homogenity_index$conductivity,
           homogenity_index$support, phi = 0, bty ="g",

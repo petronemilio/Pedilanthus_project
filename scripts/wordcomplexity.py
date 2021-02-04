@@ -60,3 +60,25 @@ for k,v in lempelziv_log.items():
 
 mydataframe.to_csv('../Data/lemplzivbyfile.csv')
 
+
+######Calc. shannon entropy of individual cell files
+
+shannon_entropy_files = {} #Empty dictionary to add values into
+for values in filenames.values():
+    shannon_entropy_files[values[0]]=[]
+    for z in range(len(values[2])):
+        x = wordanalysis.estimate_shannon_entropy(values[2][z])
+        shannon_entropy_files[values[0]].append(x)
+
+mydataframe = pd.DataFrame()
+for k,v in shannon_entropy_files.items():
+    lst2 = list(np.repeat(k,len(v)))
+    df = pd.DataFrame(list(zip(v, lst2)), columns =['Value', 'Name'])
+    #df.insert(0, 'Sample', np.repeat(k, np.shape(df)[0]), True)
+    mydataframe = mydataframe.append(df, ignore_index=True)
+
+mydataframe.to_csv('../Data/shannonentropy.csv')
+
+
+
+

@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 ###Here we have functions to count words and analyse cell files from secondary xylem derived cells.
 import math
+import collections
+ 
 def count_cells(file):
     """
     Returns list with number of cells per wood sample.
@@ -117,3 +119,18 @@ def lzcomprdist(string):
             inc = 1
     return(len(keys_dict))                  
 
+
+def estimate_shannon_entropy(file):
+    m = len(file)
+    cells = collections.Counter([tmp_cell for tmp_cell in file])
+ 
+    shannon_entropy_value = 0
+    for cell in cells:
+        # number of residues
+        n_i = cells[cell]
+        # n_i (# residues type i) / M (# residues in column)
+        p_i = n_i / float(m)
+        entropy_i = p_i * (math.log(p_i, 2))
+        shannon_entropy_value += entropy_i
+ 
+    return shannon_entropy_value * -1
