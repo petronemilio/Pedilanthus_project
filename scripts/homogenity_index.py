@@ -131,7 +131,7 @@ def homogenity_index(string):
     n11 = 0
     n00 = 0
     n0 = 0
-    n1 = 1
+    n1 = 0
     for i in range(0,len(string)):
         if string[i:i+2] == '01':
             n01 += 1
