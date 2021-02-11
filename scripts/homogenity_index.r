@@ -228,7 +228,9 @@ scatter3D(homogenity_index$storage,homogenity_index$conductivity,
           col = pal3, 
           pch = 4, ticktype = "detailed",
           colkey = list(at = c(2,3,4,5,6)), side = 1,addlines = TRUE, length = 0.5, width = 0.5,
-          labels = c("L-system", "L-systemCSM", "L-systemCSX","mesic","xeric"),
+          labels = c("mesic","xeric","L-system","L-systemCSX","L-systemCSM"),
+          #id=list(method = "mahal", n = length(homogenity_index$habit), 
+           #       labels = homogenity_index$habit),
           phi = 0, bty ="g",
           main = "Homogenity index", xlab = "Storage index",
           ylab ="Conductivity index", zlab = "Support index")
@@ -240,9 +242,10 @@ scatterplot3d(homogenity_index$storage,homogenity_index$conductivity,
           homogenity_index$support, angle=55, pch=16, color=pal3,
           main="3D Scatter Plot",xlab = "Storage index",ylab = "Conductivity index",
           zlab = "Support index") 
-legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
-       col =levels(as.factor(pal3)) , pch = 16, inset =-0.4,xpd=TRUE,horiz=TRUE)
+legend("bottom", legend = c("mesic","xeric","L-system","L-systemCSX","L-systemCSM"),
+       col =levels(as.factor(pal3)) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
 dev.off()
+levels(as.factor(homogenity_index$habit))
 
 pdf("Figures/morphospace2.pdf")
 scatterplot3d(homogenity_index$storage,homogenity_index$support,
@@ -251,7 +254,7 @@ scatterplot3d(homogenity_index$storage,homogenity_index$support,
               main="3D Scatter Plot",xlab = "Storage index",ylab = "Support index",
               zlab = "Conductivity index") 
 legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
-       col =levels(as.factor(pal3)) , pch = 16, inset =-0.4,xpd=TRUE,horiz=TRUE)
+       col =levels(as.factor(pal3)) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
 dev.off()
 
 scatter3D(homogenity_index$storage,homogenity_index$conductivity,

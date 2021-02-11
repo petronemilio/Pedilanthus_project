@@ -31,41 +31,30 @@ for keys, values in filenames.items():
         for z in s:
             my_vocabulary.add(z)
             
-#Now dictoniary is ready for analysis
-#Quitar los radios y sin que se afecte el orden de las otras células
-for values in filenames.values(): 
-    values.append([])
-    for i in range(0,len(values[1])):
-        x = values[1][i].replace('R','')
-        if x == '':
-            pass
-        else:
-            values[2].append(x)
-
 #################  Create a dictionary to save the word counting #########
-word_diversity = {} #Empty dictionary to add values into
+word_diversityR = {} #Empty dictionary to add values into
 for i in range(2,11):
-    word_diversity[i]={}
+    word_diversityR[i]={}
     for values in filenames.values(): 
-        word_diversity[i][values[0]] = wordanalysis.get_all_words(values[2], i)
+        word_diversityR[i][values[0]] = wordanalysis.get_all_words(values[1], i)
 
 ###Write matrix output from df
 val = 2
-for x in word_diversity.values():
-    wordcount = pd.DataFrame.from_dict(x, orient='index')
-    wordcount.to_csv('../Data/wordcounts'+ str(val)+'.csv', index = True)    
+for x in word_diversityR.values():
+    wordcountR = pd.DataFrame.from_dict(x, orient='index')
+    wordcountR.to_csv('../Data/wordcountsR'+ str(val)+'.csv', index = True)    
     val += 1
 
 ################################# Calc Euclidean distance   #################
 euc_list = {}
-for k, v in word_diversity.items():
+for k, v in word_diversityR.items():
     header = ["File1","File2", "Euc_dist"]
     euc_list[k]={}
     my_list=[]
     for k1, k2 in itertools.combinations(v, 2):
         my_list.append([k1,k2, wordanalysis.euc_dist(v[k1], v[k2])])
     euc_list[k]=my_list
-    f = "../Data/euclidean_distance"+str(k)+'.csv'
+    f = "../Data/euclidean_distanceR"+str(k)+'.csv'
     # writing to csv file  
     with open(f, 'w') as csvfile:  
     # creating a csv writer object  
