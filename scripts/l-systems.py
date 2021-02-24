@@ -221,4 +221,82 @@ with open('../Data/Cell_files_data/contextmesicLsystem_edited_cells.txt', 'w') a
     for row in random_files:
         output.write(str(row) + '\n')
 
+####Apply lsystem that generates Ray cells
+rulesR = { "A" : ["AB","Z"] , "B" : ["V","F","P"], "Z": "ZR"}
+##
+def iteratex(axioms, rules):
+    new_text = []
+    parsero = list(axioms)
+    parsero.append('')
+    for i, item in enumerate(parsero):
+        if item == '':
+            pass
+        #If string is just AB it will generate V,F or P with equal probability
+        elif item in rules and parsero[i]=='A':
+            s = random.uniform(0, 1)
+            if s < 0.998:
+                new_text.append(rules[item][0])
+            else:
+                new_text.append(rules[item][1])
+        #   
+        elif item in rules and parsero[i+1]=='':
+            if parsero[i] == 'R':
+                new_text.append(rules[item])
+            elif parsero[i] == 'B':
+                s = random.randint(0,3)
+                if s == 0:
+                    new_text.append(rules[item][0])
+                elif s == 1:
+                    new_text.append(rules[item][1])
+                else:
+                    new_text.append(rules[item][2])
+            elif parsero[i] == 'Z':
+                new_text.append(rules[item])
+        elif item in rules and parsero[i]=='B':
+            s = random.randint(0,3)
+            if s == 0:
+                new_text.append(rules[item][0])
+            elif s == 1:
+                new_text.append(rules[item][1])
+            else:
+                new_text.append(rules[item][2])
+        elif item in rules and parsero[i]=='R':
+            new_text.append(rules[item])
+            
+        elif item in rules:
+            new_text.append(rules[item])
+        
+        else:
+            new_text.append(item)
+    return ''.join(new_text)
+
+###
+def lsystemr(axioms, rules, iteration):
+    x = axioms
+    for i in range(iteration):
+        x=iteratex(x, rules)
+    return ''.join(x)
+
+#23% mean of files are ray cells
+lengths_array = np.random.randint(10,150,120)
+random_files = []
+for i in lengths_array:
+    s = random.uniform(0, 1)
+    if s < 0.77:
+        random_files.append(lsystemr('A',rulesR,i))
+    else:
+        random_files.append(lsystemr('Z',rulesR,i))
+
+#Remove A,B and Z
+for x, y in enumerate(random_files): 
+    random_files[x] = y.replace('B', '') 
+for x, y in enumerate(random_files):     
+    random_files[x] = y.replace('A', '') 
+for x, y in enumerate(random_files):     
+    random_files[x] = y.replace('Z', '')
+ 
+with open('../Data/Cell_files_data/Ray_Lsystem_edited_cells.txt', 'w') as output:
+    for row in random_files:
+        output.write(str(row) + '\n')
+
 
