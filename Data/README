@@ -1,6 +1,6 @@
 La edición de los archivos consiste de los siguientes pasos:
 	1) En caso de que se haya contabilizado más de un individuo por especie dividir el archivo de la especie por individuo para continuar su edición por separado.	
-	2) Agregar un identificador de número de hilera de células a las que no lo tienen porque no comienzan desde la zona cambial. De esa forma se tiene contabilizadas a todas las hileras. Una vez terminado el archivo se guarda con el identificador de colecta y se le agrega edited, i.e 896_edited.txt en la carpeta de cell_files
+	2) Agregar un identificador de número de hilera de células a las que no lo tienen porque no comienzan desde la zona cambial. De esa forma se tiene contabilizadas a todas las hileras. Una vez terminado el archivo se guarda con el identificador de colecta y se le agrega edited, i.e 896_edited.txt en la carpeta de Raw_data/P_especie
 	3) Al archivo edited.txt con un awk comand se le quita los identificadores y se redirige a un nuevo archivo que deja solamente las filas. Despúes de eso con sed comands se eliminan los (Converge-) y manualmente se editan las dudas y células no codificadas correctamente (por ejemplo, células que se codifican con ^para ejemplificar células que se meten en el plano de otra célula se eliminan).
 
 Ejemplo de awk command: awk '{print $4'} ../Data/Pedilanthus/P_bracteatus/P_bracteatus_edited.txt 
