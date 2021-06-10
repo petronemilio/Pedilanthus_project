@@ -41,7 +41,10 @@ def createLSystem(numIters,axiom):
 
 ##Apply the previuos functions to get an array of files
 #in which cells had equal probability of formation each cycle
-lengths_array = np.random.randint(10,150,120)
+#Set seed
+random.seed(10)
+#Repeat the procedure for 4 hypothetical L
+lengths_array = np.random.randint(10,150,300) ###Check the distribution of lengths
 random_files = []
 for i in lengths_array:
     random_files.append(createLSystem(i,'A'))
@@ -51,12 +54,27 @@ for x, y in enumerate(random_files):
 for x, y in enumerate(random_files):     
     random_files[x] = y.replace('A', '') 
     
-####    
+####  Write the lsystem
 with open('../Data/Cell_files_data/probLsystem_edited_cells.txt', 'w') as output:
     for row in random_files:
         output.write(str(row) + '\n')
-
-
+#Make on prob. system with the beta distribution
+x=np.random.beta(2, 5, size=300)*500
+lengths_array = (np.random.beta(2,5,300))*500 #
+lengths_array = lengths_array.astype(int)
+#####
+random_files = []
+for i in lengths_array:
+    random_files.append(createLSystem(i,'A'))
+#Remove A and B
+for x, y in enumerate(random_files): 
+    random_files[x] = y.replace('B', '') 
+for x, y in enumerate(random_files):     
+    random_files[x] = y.replace('A', '') 
+####  Write the lsystem beta
+with open('../Data/Cell_files_data/probLsystembeta_edited_cells.txt', 'w') as output:
+    for row in random_files:
+        output.write(str(row) + '\n')
 ####L-system with context sensitivity for average trasnition of xeric habit
 #F-F	F-V	    F-P	    0.9288	0.0017	0.0695
 #V-V    V-P     V-F     0.2784	0.3658	0.3558
@@ -125,7 +143,7 @@ def clsystemx(axioms, rules, iteration):
 
 ##Apply the previuos functions to get an array of files
 #in which cells had equal probability of formation each cycle
-lengths_array = np.random.randint(10,150,120)
+lengths_array = np.random.randint(10,150,300)
 random_files = []
 for i in lengths_array:
     random_files.append(clsystemx('AB',rules_ctsens,i))
@@ -207,7 +225,7 @@ def clsystemm(axioms, rules, iteration):
 
 ##Apply the previuos functions to get an array of files
 #in which cells had equal probability of formation each cycle
-lengths_array = np.random.randint(10,150,120)
+lengths_array = np.random.randint(10,150,300)
 random_files = []
 for i in lengths_array:
     random_files.append(clsystemm('AB',rules_ctsens,i))
@@ -278,7 +296,7 @@ def lsystemr(axioms, rules, iteration):
     return ''.join(x)
 
 #23% mean of files are ray cells
-lengths_array = np.random.randint(10,150,120)
+lengths_array = np.random.randint(10,150,300)
 random_files = []
 for i in lengths_array:
     s = random.uniform(0, 1)

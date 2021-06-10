@@ -33,13 +33,13 @@ for keys, values in filenames.items():
             
 #################  Create a dictionary to save the word counting #########
 word_diversityR = {} #Empty dictionary to add values into
-for i in range(2,11):
+for i in range(1,11):
     word_diversityR[i]={}
     for values in filenames.values(): 
         word_diversityR[i][values[0]] = wordanalysis.get_all_words(values[1], i)
 
 ###Write matrix output from df
-val = 2
+val = 1
 for x in word_diversityR.values():
     wordcountR = pd.DataFrame.from_dict(x, orient='index')
     wordcountR.to_csv('../Data/wordcountsR'+ str(val)+'.csv', index = True)    

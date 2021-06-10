@@ -14,8 +14,8 @@ import pandas as pd
 def nextpoint(actualpoint, character):
     """Recieves a list with x,y positions and a character 
     with info of the next coordinates"""
-    coordenadas ={ 'V':(-250,250), 
-                  'F':(-250,-250),'P':(250,250),'R':(250,-250)} 
+    coordenadas ={ 'V':(-1000,1000), 
+                  'F':(-1000,-1000),'P':(1000,1000),'R':(1000,-1000)} 
     nextpoint= actualpoint
     nextpoint[0] = (coordenadas[character][0] + actualpoint[0])/2
     nextpoint[1] = (coordenadas[character][1] + actualpoint[1])/2

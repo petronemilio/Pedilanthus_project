@@ -7,6 +7,8 @@ library(ggstance)
 library(vioplot)
 library(plot3D)
 library(scatterplot3d)
+library(data.table)
+library(fitdistrplus)
 ##sET WORKING DIRECTORY
 getwd()
 ###
@@ -19,60 +21,28 @@ pal4 <- wes_palette("FantasticFox1")
 my_palette <- c(pal1,pal2,pal3,pal4)
 ############################################
 #Graficar la distribución de las longitudes de las series.
-p_brac_long<-read.csv("../Data/Pedilanthus/P_bracteatus/bracteatus_length_filecells.csv",
-                        header = TRUE)
-#
-p_calc_long<-read.csv("../Data/Pedilanthus/P_calcaratus/calcaratus_length_filecells.csv",
-                               header = TRUE)
-#E. colli
-p_col_long<-read.csv("../Data/Pedilanthus/P_colligata/colligata_length_filecells.csv",
-                         header = TRUE)
-#E. coalcomanensis
-p_coalco_long<-read.csv("../Data/Pedilanthus/P_coalcomanensis/coalcomanensis_length_filecells.csv",
-                        header = TRUE)
-#E. cymbifera
-p_cymbi_long<-read.csv("../Data/Pedilanthus/P_cymbiferus/cymbiferus_length_filecells.csv",
-                       header = TRUE)
-
-######
-p_diazluna_long<-read.csv("../Data/Pedilanthus/P_diazluna/diazluna_length_filecells.csv",
-                             header = TRUE)
-
-#
-p_finkii_long<-read.csv("../Data/Pedilanthus/P_finkii/finkii_length_filecells.csv",
-                        header = TRUE)
-#
-p_macrocarpus_long<-read.csv("../Data/Pedilanthus/P_macrocarpus/macrocarpus_length_filecells.csv",
-                             header = TRUE)
-#
-p_peritropoides_long <-read.csv("../Data/Pedilanthus/P_peritropoides/peritropoides_length_filecells.csv",
-                               header = TRUE)
-#
-p_personata_long <- read.csv("../Data/Pedilanthus/P_personata/personata_length_filecells.csv",
-                             header = TRUE)
-
-p_pulchellus_long<-read.csv("../Data/Pedilanthus/P_pulchellus/pulchellus_length_filecells.csv",
-                            header = TRUE)
-
+cell_lengths <- read.csv("Data/cell_lengths.csv")
+files <- levels(as.factor(cell_lengths$Sample))
+species<- c("E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
+            "E. calcarata","E. calcarata","E. finkii","E. tithymaloides","E. conzattii",
+            "E. cyri","E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
+            "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana","E. lomelli",
+            "E. cyri", "E. cymbifera", "E. tithymaloides","E. tithymaloides","E. personata",
+            "E. personata","probL-system","probetaL-system","RayL-system")
+habit <- c("xeric","xeric","mesic","mesic",
+           "mesic","mesic","mesic","xeric","mesic",
+           "xeric","mesic","xeric","xeric","L-systemCSM",
+           "L-systemCSX","xeric","xeric","xeric","xeric",
+           "xeric","xeric","xeric","xeric","xeric",
+           "xeric","probL-system","probetaL-system","RayL-system")
+species.id <- as.data.frame(cbind(files,species,habit))
 #####
-p_tehuacanus_long<-read.csv("../Data/Pedilanthus/P_tehuacanus/tehuacanus_length_filecells.csv",
-                            header = TRUE)
+match.id <- match(cell_lengths$Sample,species.id$files)
+cell_lengths$species <- as.character(species.id$species[match.id])
+#
+cell_lengths$habit <- as.character(species.id$habit[match.id])
 #####
-p_tithy_long<-read.csv("../Data/Pedilanthus/P_tithymaloides/tithymaloides_length_filecells.csv",
-                         header = TRUE)
-
-######
-p_tomentellus_long<-read.csv("../Data/Pedilanthus/P_tomentellus/tomentellus_length_filecells.csv",
-                             header = TRUE)
-
-
-longitud_series<-rbind(p_brac_long,p_brac_long, p_calc_long, p_coalco_long,
-                       p_col_long, p_cymbi_long, p_diazluna_long,p_finkii_long,
-                       p_macrocarpus_long, p_peritropoides_long, p_personata_long,
-                       p_pulchellus_long,p_tehuacanus_long, p_tithy_long,
-                       p_tomentellus_long)
-
-p  <- ggplot(longitud_series, aes(Number.of.cells, colour=Species, fill=Species))
+p  <- ggplot(cell_lengths, aes(Number.of.cells, colour=species, fill=species))
 p  <- p + geom_density(alpha=0.2)
 p
 
@@ -82,12 +52,14 @@ par(mar=c(7,5,1,1))
 new_pal<-c("#cb57aa","#6db744","#8760cf","#c2af45","#7d7fc5","#dd8d4a","#45b0cf","#cf483c",
            "#5cc08c","#c56179","#3b824e","#976530","#76853a")
 
-boxplot(Number.of.cells~Species, longitud_series,horizontal=TRUE,
+boxplot(cell_lengths$Number.of.cells~species, cell_lengths,horizontal=TRUE,
+        col=new_pal)
+boxplot(cell_lengths$Number.of.cells~cell_lengths$species,
         col=new_pal)
 
-longitud_series$Species<-with(longitud_series, reorder(Species, Number.of.cells, mean))
+cell_lengths$species <- with(cell_lengths, reorder(species,Number.of.cells,mean))
 
-boxplot(Number.of.cells~Species, longitud_series,horizontal = TRUE, las=1.5,
+boxplot(Number.of.cells~species, cell_lengths,horizontal = TRUE, las=1.5,
         col=c(pal), xlab="Longitud de las filas",ylab = NULL, cex=0.4,
         names=c(expression(italic("E. lomelli")),expression(italic("E. cymbifera")),
                 expression(italic("E. tithymaloides")), expression(italic("E. diazlunana")),
@@ -97,77 +69,123 @@ boxplot(Number.of.cells~Species, longitud_series,horizontal = TRUE, las=1.5,
                 expression(italic("E. cyri")),expression(italic("E. tehuacana")),
                 expression(italic("E. calcarata")),expression(italic("E. conzattii"))),
         cex.names=1.1, cex.axis=0.8, cex.lab=1.2)
+##
+boxplot(cell_lengths$Number.of.cells~cell_lengths$habit,
+        col=new_pal)
+##
+cellfilemean<-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$species), FUN=mean)
 
-boxplot(Number.of.cells~Species, longitud_series)
+##
+hist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"])
+hist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"])
+hist(cell_lengths$Number.of.cells[cell_lengths$habit=="L-systemCSM"])
+hist(cell_lengths$Number.of.cells[cell_lengths$habit=="probetaL-system"])
 
-# Draw the boxplot using this new order
-boxplot(data$note ~ new_order , ylab="sickness" , col="#69b3a2", boxwex=0.4 , main="")
+q  <- ggplot(cell_lengths, aes(Number.of.cells, colour=habit, fill=habit))
+q  <- q + geom_density(alpha=0.2)
+q
 
 
-ggplot(longitud_series, aes(x =Species,y=Number.of.cells, fill = Species)) +
+descdist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"], discrete = FALSE)
+descdist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"], discrete = FALSE)
+
+ggplot(cell_lengths, aes(x =habit,y=Number.of.cells, fill = habit)) +
   geom_violin()+ coord_flip()+
   scale_y_continuous(breaks = c(0,50,100,150,200,250,300,350,400,500,600))+
   scale_fill_manual(values=c(pal))+
-  theme_classic()+  theme(legend.position = "none") 
+  theme(legend.position = "none") 
  
 
 # Draw the plot
-calca <- subset(longitud_series, Especie=="E. calcarata", select=c(Especie, Longitud))
-tithy <- subset(longitud_series, Especie=="E. tithymaloides", select=c(Especie, Longitud))
-cyri <- subset(longitud_series, Especie=="E. cyri", select=c(Especie, Longitud))
-brac <- subset(longitud_series, Especie=="E. bracteata", select=c(Especie, Longitud))
-finkii<- subset(longitud_series,Especie=="E. finkii", select=c(Especie, Longitud))
-colli<- subset(longitud_series,Especie=="E. colligata", select=c(Especie, Longitud))
-diazlunana<- subset(longitud_series,Especie=="E. diazlunana", select=c(Especie, Longitud))
+calca <- subset(cell_lengths, species=="E. calcarata", select=c(species,Number.of.cells))
+tithy <- subset(cell_lengths, species=="E. tithymaloides", select=c(species, Number.of.cells))
+cyri <- subset(cell_lengths, species=="E. cyri", select=c(species, Number.of.cells))
+brac <- subset(cell_lengths, species=="E. bracteata", select=c(species, Number.of.cells))
+finkii<- subset(cell_lengths,species=="E. finkii", select=c(species, Number.of.cells))
+colli<- subset(cell_lengths,species=="E. colligata", select=c(species, Number.of.cells))
+diazlunana<- subset(cell_lengths,species=="E. diazlunana", select=c(species, Number.of.cells))
+coalco<- subset(cell_lengths,species=="E. coalcomanensis", select=c(species, Number.of.cells))
+lomelli<- subset(cell_lengths,species=="E. lomelli", select=c(species, Number.of.cells))
+conza<- subset(cell_lengths,species=="E. conzattii", select=c(species, Number.of.cells))
+peri<- subset(cell_lengths,species=="E. peritropoides", select=c(species, Number.of.cells))
+tehua<- subset(cell_lengths,species=="E. tehuacana", select=c(species, Number.of.cells))
+cymbi<- subset(cell_lengths,species=="E. cymbifera", select=c(species, Number.of.cells))
+perso<- subset(cell_lengths,species=="E. personata", select=c(species, Number.of.cells))
 #
-vioplot(brac$Longitud,calca$Longitud, colli$Longitud,cyri$Longitud,
-        finkii$Longitud,diazlunana$Longitud,tithy$Longitud, 
-        names=c("a","b","c","d","e","f","g"),
-        col=c("#899DA4","#C93312","#FAEFD1","#DC863B", "#F1BB7B", "#FD6467","#5B1A18"))
+descdist(calca$Number.of.cells)
+descdist(tithy$Number.of.cells)
+descdist(cyri$Number.of.cells)
+descdist(brac$Number.of.cells)
+descdist(finkii$Number.of.cells)
+descdist(colli$Number.of.cells)
+descdist(diazlunana$Number.of.cells)
+descdist(coalco$Number.of.cells)
+descdist(lomelli$Number.of.cells)
+descdist(conza$Number.of.cells)
+descdist(peri$Number.of.cells)
+descdist(colli$Number.of.cells)
+descdist(peri$Number.of.cells)
+descdist(tehua$Number.of.cells)
+descdist(cymbi$Number.of.cells)
+descdist(perso$Number.of.cells)
 
+pdf("Figures/cell_lengths.pdf")
+vioplot(brac$Number.of.cells,lomelli$Number.of.cells,tithy$Number.of.cells,
+        cyri$Number.of.cells,cymbi$Number.of.cells, tehua$Number.of.cells,
+        diazlunana$Number.of.cells,perso$Number.of.cells,
+        colli$Number.of.cells,coalco$Number.of.cells,calca$Number.of.cells,  
+        finkii$Number.of.cells,conza$Number.of.cells,peri$Number.of.cells,
+        names=c("Br","Lo","Ti","Cyr","Cym","Teh","Di","Pe","Col","Coa","Cal","Fin",
+                "Con","Peri"),
+        col=c("#899DA4","#899DA4","#899DA4","#899DA4","#899DA4","#899DA4","#899DA4","#899DA4",
+              "#C93312","#C93312","#C93312","#C93312","#C93312","#C93312"))
+dev.off()
+lm.cellength <- lm(cell_lengths$Number.of.cells ~ cell_lengths$species)
+summary(lm.cellength)
+library(emmeans)
+emm1 <-emmeans(lm.cellength, specs = pairwise ~ species)
+emm1$emmeans
+emm1$contrasts
+boxplot(log10(cell$vwt) ~ cell$simp.scal * cell$conductive)
 ############################################################
 #Graficar los tipos celulares
-tipos_celulares <- read.csv("../Data/Pedilanthus/cell_counts.csv")
+tipos_celulares <- read.csv("Data/wordcountsR1.csv")
+colnames(tipos_celulares)[1] = "Sample"
+match.id <- match(tipos_celulares$Sample,species.id$files)
+tipos_celulares$species <- as.character(species.id$species[match.id])
+#
+tipos_celulares$totalcells <-rowSums(tipos_celulares[,c(2:5)])
 
-especies <- levels(longitud_series$Species)
-especies
-especies_por_muestra <- c(especies[1], rep(especies[2],2), especies[3:5], rep(especies[6],3), 
-  especies[7:8],rep(especies[10],2),especies[9],especies[11:12], rep(especies[13],2), especies[14])
-
-tipos_celulares <- cbind(especies_por_muestra,tipos_celulares)
-
-tipos_celulares$totalcells <-rowSums(tipos_celulares[,c(3:6)])
-
-tipos_celulares_freq <- tipos_celulares[,c(3:6)] / tipos_celulares[,7] 
-tipos_celulares_freq$especie <- tipos_celulares$especies_por_muestra
-
-tipos_celulares <- reshape(data=tipos_celulares, idvar="x", varying = c("Vasos","Fibras","Parénquima","Radios"),
-        times=c("Vasos","Fibras","Parénquima","Radios"),v.name=c("Count"),direction="long")
-
-
+tipos_celulares_freq <- tipos_celulares[,c(2:5,7)] / tipos_celulares[,7] 
+tipos_celulares_freq$sample <- tipos_celulares$Sample
+##### Obtain a table of cells per sample and number of cells
+numberofcells <- table(cell_lengths$Sample)
+rownames(numberofcells)
+match.id <- match(tipos_celulares$Sample,rownames(numberofcells))
+tipos_celulares$numberofFiles <- as.character(numberofcells[match.id])
+write.table(tipos_celulares, "Data/cell_Lengths_Celltypes.csv")
+  
+#
+#Reshape dat to plot
+tipos_celulares <- reshape(data=tipos_celulares, idvar="x", varying = c("V","F","P","R"),
+        times=c("V","F","P","R"),v.name=c("Count"),direction="long")
+#
 ggplot(tipos_celulares) + 
-  geom_bar(mapping=aes(x = especies_por_muestra, y = Count, fill= time), stat = "identity",
+  geom_bar(mapping=aes(x = Sample, y = Count, fill= time), stat = "identity",
            position = "fill") +coord_flip()
 
-  ggplot(tipos_celulares) + 
-  geom_bar(mapping=aes(x = especies_por_muestra, y = Count, fill= time), stat = "identity")
-
-  
-######################
-library(data.table)
-#setDT converts to a data.table and then you calculate the fraction of each expr
-#grouping by the transcript_id
-#setDT(tipos_celulares)[, frac := Count / sum(Count), by=X]
-
-#("gridExtra")
-
-tipos_fusiformes <- subset(tipos_celulares, time != "Radios")
+ggplot(tipos_celulares) + 
+  geom_bar(mapping=aes(x = species , y = Count, fill= time), stat = "identity",
+           position = "fill") +coord_flip()
+#### Make plots removing cell rays #####
+tipos_fusiformes <- subset(tipos_celulares, time != "R")
 ggplot(tipos_fusiformes) + 
-  geom_bar(mapping=aes(x = especies_por_muestra, y = Count, fill= time), stat = "identity",
-           position = "fill")
+  geom_bar(mapping=aes(x = Sample, y = Count, fill= time), stat = "identity",
+           position = "fill") + coord_flip()
 
 ggplot(tipos_fusiformes) + 
-  geom_bar(mapping=aes(x = especies_por_muestra, y = Count, fill= time), stat = "identity")
+  geom_bar(mapping=aes(x = species, y = Count, fill= time), 
+           stat = "identity", position = "fill") + coord_flip()
 
 ####
 lvls <- names(sort(tapply(tipos_fusiformes$time == "Fibras", tipos_fusiformes$especies_por_muestra, mean)))
@@ -185,16 +203,6 @@ homogenity_index <- read.csv("Data/homogentiy_index.csv")
 #Take files as factor  
 files <- levels(as.factor(homogenity_index$X0))
 #Add species to the homogenity index
-species<- c("E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
-            "E. calcarata","E. calcarata","E. finkii","E. conzattii","E. cyri",
-            "E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
-            "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana",
-            "E. tithymaloides","E. tithymaloides","E. personata","E. personata",
-            "L-system")
-habit <- c("xeric","xeric","mesic","mesic",
-           "mesic","mesic","mesic","mesic","xeric",
-           "mesic","xeric","xeric","L-systemCSM","L-systemCSX","xeric",
-           "xeric","xeric","xeric","xeric","xeric","xeric","L-system")
 ##Make data frame for files
 species.id <- as.data.frame(cbind(files,species,habit))
 match.id <- match(homogenity_index$X0,species.id$files)
@@ -203,22 +211,28 @@ homogenity_index$sp <- as.character(species.id$species[match.id])
 #    
 homogenity_index$habit <- as.character(species.id$habit[match.id])
   
-ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=sp))+
+ggplot(homogenity_index, aes(x=support, y=conductivity, colour=sp))+
   geom_point() #+ scale_color_manual(values=my_palette)
 
 pdf("Figures/storage_conductivity.pdf") # Para guardar en PDF
 ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=habit))+
-  geom_point() + scale_color_manual(values=pal3)
+  geom_point() + scale_color_manual(values=c(pal3,pal2))
 dev.off()
 #
 pdf("Figures/storage_support.pdf") # Para guardar en PDF
 ggplot(homogenity_index, aes(x=storage, y=support, colour=habit))+
-  geom_point() + scale_color_manual(values=pal3)
+  geom_point() + scale_color_manual(values=c(pal3,pal4))
 dev.off()
 #
+species_index <- subset(homogenity_index, habit == "xeric" | habit == "mesic" | habit=="probetaL-system")
 pdf("Figures/support_conductivity.pdf") # Para guardar en PDF
-ggplot(homogenity_index, aes(x=conductivity, y=support, colour=habit))+
-  geom_point() +  scale_color_manual(values=pal3)
+ggplot(species_index, aes(x=conductivity, y=support, colour=sp))+
+  geom_point() +  scale_color_manual(values=c(my_palette))
+dev.off()
+
+pdf("Figures/support_conductivity1.pdf")
+ggplot(species_index, aes(x=conductivity, y=support, colour=habit))+
+  geom_point() +  scale_color_manual(values=c(my_palette))
 dev.off()
 ######
 pdf("Figures/3dscatter.pdf")

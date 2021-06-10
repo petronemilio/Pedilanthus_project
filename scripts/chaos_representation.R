@@ -16,7 +16,7 @@ dev.off()
 ##First do it with subset
 e.peritropoides.974 <- subset(chaos_representation, Sample == "974_edited_cells.txt")
 
-e.perirtropoides.974 %>%
+e.peritropoides.974 %>%
   group_by(count)
 
 counter <- c()
@@ -39,16 +39,17 @@ e.peritropoides.974$count[1] < e.peritropoides.974$count[1+1]
 
 #Add species to the chaos data frame
 species<- c("E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
-            "E. calcarata","E. calcarata","E. finkii","E. conzattii","E. cyri",
-            "E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
-            "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana",
-            "E. tithymaloides","E. tithymaloides","E. personata","E. personata",
-            "L-system","RayL-system")
+            "E. calcarata","E. calcarata","E. finkii","E. tithymaloides","E. conzattii",
+            "E. cyri","E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
+            "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana","E. lomelli",
+            "E. cyri", "E. cymbifera", "E. tithymaloides","E. tithymaloides","E. personata",
+            "E. personata","probL-system","probetaL-system","RayL-system")
 habit <- c("xeric","xeric","mesic","mesic",
-           "mesic","mesic","mesic","mesic","xeric",
-           "mesic","xeric","xeric","L-systemCSM","L-systemCSX","xeric",
-           "xeric","xeric","xeric","xeric","xeric","xeric","L-system","RayL-system")
-
+           "mesic","mesic","mesic","xeric","mesic",
+           "xeric","mesic","xeric","xeric","L-systemCSM",
+           "L-systemCSX","xeric","xeric","xeric","xeric",
+           "xeric","xeric","xeric","xeric","xeric",
+           "xeric","probL-system","probetaL-system","RayL-system")
 ##Make data frame for files
 species.id <- as.data.frame(cbind(files,species,habit))
 #Create mathc between chaos and species
@@ -62,10 +63,12 @@ species.factor <- levels(as.factor(species))
 pdf("Figures/chaos_representation_bysp.pdf")
 for(i in species.factor) {
   temp <- subset(chaos_representation, chaos_representation$sp == i)
-  plot(temp$X,temp$Y,main= i,col=as.factor(chaos_representation$Sample))
+  plot(temp$X,temp$Y,main= i)
 }
 dev.off()
 
+plot(chaos_representation$X[chaos_representation$sp=="E. coalcomanensis"],
+     chaos_representation$Y[chaos_representation$sp=="E. coalcomanensis"])
 #Plot by habit
 habit.factor <- levels(as.factor(habit))
 pdf("Figures/chaos_representation_byhabit.pdf")

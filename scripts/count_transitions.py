@@ -31,7 +31,7 @@ for keys, values in filenames.items():
         for z in s:
             my_vocabulary.add(z)
             
-#Now dictoniary is ready for analysis
+#Now dictoniary is ready for analysis.
 #Quitar los radios y sin que se afecte el orden de las otras células
 for values in filenames.values(): 
     values.append([])
@@ -44,13 +44,13 @@ for values in filenames.values():
 
 #################  Create a dictionary to save the word counting #########
 word_diversity = {} #Empty dictionary to add values into
-for i in range(2,11):
+for i in range(1,11):
     word_diversity[i]={}
     for values in filenames.values(): 
         word_diversity[i][values[0]] = wordanalysis.get_all_words(values[2], i)
 
 ###Write matrix output from df
-val = 2
+val = 1
 for x in word_diversity.values():
     wordcount = pd.DataFrame.from_dict(x, orient='index')
     wordcount.to_csv('../Data/wordcounts'+ str(val)+'.csv', index = True)    
