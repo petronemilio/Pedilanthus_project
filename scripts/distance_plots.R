@@ -395,7 +395,22 @@ library(emmeans)
 emmeans(lempel.cellhabit.lm, ~ habit)
 lempel.cellsp.lm <-lm(lempel.by.cell$Value~lempel.by.cell$species)
 summary(lempel.cellsp.lm)
+##Remove rlsystem, and context sensitive lsystems
+lempel.by.cell_subset <-subset(lempel.by.cell, lempel.by.cell$species != "RayL-system")
+lempel.by.cell_subset <-subset(lempel.by.cell_subset, lempel.by.cell_subset$species != "L-systemMesic")
+lempel.by.cell_subset <-subset(lempel.by.cell_subset, lempel.by.cell_subset$species != "L-systemXeric")
+lempel.by.cell_subset$species <- factor(lempel.by.cell_subset$species)
 #
+lempel.cellsp.lm <-lm(lempel.by.cell_subset$Value ~ factor(lempel.by.cell_subset$species))
+emm.lempel <- emmeans(lempel.cellsp.lm, specs = pairwise ~ species,adjust="tukey")
+emm.lempel$contrasts
+multcomp::cld(emm.lempel$emmeans, alpha = 0.10, Letters=LETTERS)
+#
+pdf("Figures/lempelzivsp_reduced.pdf")
+boxplot(lempel.by.cell_subset$Value ~ lempel.by.cell_subset$species, 
+        las=1.5, xlab = "Cell-file Lempel-Ziv algorithm",ylab = "Score", cex=0.4,
+        cex.names=0.5, cex.axis=0.6, cex.lab=1.2)
+dev.off()
 ggplot(lempel.by.cell, aes(x = Name, y = Value, color = species)) + geom_boxplot()
 ggplot(lempel.by.cell, aes(x = species, y = Value, color = species)) + geom_boxplot()
 
@@ -497,10 +512,7 @@ pdf("Figures/shanonbyhabit.pdf") # Para guardar en PDF
 boxplot(shannonentropy.by.cell$Value ~ shannonentropy.by.cell$habit,col=colores,
         las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
 dev.off()
-shannondiff.lm <- lm(shannonentropy.by.cell$Value~shannonentropy.by.cell$species)
-summary(shannondiff.lm)
-shannondiffhabit.lm <- lm(shannonentropy.by.cell$Value~shannonentropy.by.cell$habit)
-emmeans(shannondiffhabit.lm, ~ habit)
+
 
 pdf("Figures/entropybyfile.pdf")
 par(mfrow = c(2,1))
@@ -524,7 +536,34 @@ pdf("Figures/shannon_bycell.pdf")
 ggplot(shannon_subset, aes(x = Sequence,y = Value,color = species)) +
   geom_line()
 dev.off()
-
+#######
+##Remove rlsystem, and context sensitive lsystems
+shannonentropy.by.cell_subset <-subset(shannonentropy.by.cell, shannonentropy.by.cell$species != "RayL-system")
+shannonentropy.by.cell_subset <-subset(shannonentropy.by.cell_subset, 
+                                       shannonentropy.by.cell_subset$species != "L-systemMesic")
+shannonentropy.by.cell_subset <-subset(shannonentropy.by.cell_subset, 
+                                       shannonentropy.by.cell_subset$species != "L-systemXeric")
+shannonentropy.by.cell_subset$species <- factor(shannonentropy.by.cell_subset$species)
+#
+shannon.cellsp.lm <-lm(shannonentropy.by.cell_subset$Value ~ 
+                      factor(shannonentropy.by.cell_subset$species))
+emm.shannon <- emmeans(shannon.cellsp.lm, specs = pairwise ~ species,adjust="tukey")
+emm.shannon$contrasts
+multcomp::cld(emm.shannon$emmeans, alpha = 0.10, Letters=LETTERS)
+#
+pdf("Figures/shanonbysp_subset.pdf")
+boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$species,
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
+        names=c( expression(italic("E. bracteata")),expression(italic("E. calcarata")) ,
+                 expression(italic("E. coalcomanensis")),expression(italic("E. colligata")), 
+                 expression(italic("E. conzattii")),expression(italic("E. cymbifera")),
+                 expression(italic("E. cyri")), expression(italic("E. diazlunana")),
+                 expression(italic("E. finkii")),expression(italic("E. lomelli")),
+                 expression(italic("E. peritropoides")),  expression(italic("E. personata")),
+                 expression(italic("E. tehuacana")),expression(italic("E. tithymaloides")),
+                expression("probBetaLsystem"),expression("probL-system")),
+        cex.names=0.5, cex.axis=0.8, cex.lab=1.2)
+dev.off()
 #######Checkout files with ray cells########
 shannonentropy.by.cell.with.ray <- read.csv("Data/shannonentropywithR.csv", row.names=1)
 
@@ -541,3 +580,16 @@ plot(shannonentropy.by.cell.with.ray$Value[shannonentropy.by.cell.with.ray$Name=
      type ="l", xlab="Compression distance")
 lines(shannonentropy.by.cell$Value[shannonentropy.by.cell$Name=="974_edited_cells.txt"],
      type ="l", col =my_palette[2])
+######Check out Shanon by window #####
+shannonentropy.by.window <- read.csv("Data/shannonentropy_window.csv", row.names=1)
+library(dplyr)
+shannonentropy.by.window <- shannonentropy.by.window %>% group_by(Lineage) %>% mutate(id = row_number())
+
+
+window947 <- subset(shannonentropy.by.window, Sample == "974_edited_cells.txt")
+plot(window947$id[window947$Lineage==2],window947$Value[window947$Lineage==2])
+
+ggplot(window947, aes(x= id, y = Value, color=Lineage)) +
+  geom_point()
+
+ggplot(lempel.by.cell, aes(x = Name, y = Value, color = species)) + geom_boxplot()

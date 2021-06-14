@@ -79,6 +79,26 @@ for k,v in shannon_entropy_files.items():
 
 mydataframe.to_csv('../Data/shannonentropy.csv')
 
+#######Calc. shannon entropy of cell files considering window 
+shannon_by_window={}
+for values in filenames.values():
+    shannon_by_window[values[0]]={}
+    x=1
+    for z in values[2]:
+        shannon_by_window[values[0]][x] = wordanalysis.estimate_shannon_entropy_window(z)
+        x+=1
 
+#Sigue exportar a data frmae o algo parecido con pandas
+mydataframe = pd.DataFrame()
+for k,v in shannon_by_window.items():
+    for z,y in v.items():
+        lst2 = list(np.repeat(z,len(y)))
+        lst3 = list(np.repeat(k,len(y)))
+        df = pd.DataFrame(list(zip(lst3,y, lst2)), columns =['Sample','Value', 'Lineage'])
+    #df.insert(0, 'Sample', np.repeat(k, np.shape(df)[0]), True)
+        mydataframe = mydataframe.append(df, ignore_index=True)
+
+
+mydataframe.to_csv('../Data/shannonentropy_window.csv')
 
 

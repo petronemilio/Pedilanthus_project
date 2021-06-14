@@ -121,8 +121,11 @@ def lzcomprdist(string):
 
 
 def estimate_shannon_entropy(file):
+    """This function returns Shannon entropy value of a string.
+    collections.Counter makes a dictionary with counts of each letter in string.
+    """    
     m = len(file)
-    cells = collections.Counter([tmp_cell for tmp_cell in file])
+    cells = collections.Counter([tmp_cell for tmp_cell in file])  
  
     shannon_entropy_value = 0
     for cell in cells:
@@ -134,3 +137,26 @@ def estimate_shannon_entropy(file):
         shannon_entropy_value += entropy_i
  
     return shannon_entropy_value * -1
+
+
+def estimate_shannon_entropy_window(file):
+    m = len(file)
+    shannon_entropy_window=[]
+    for i in range(0,int(m/5)):
+        x = file[(i*5):((i*5)+15)]
+        m_w = len(x)
+        if m_w < 10:
+            break
+        cells = collections.Counter([tmp_cell for tmp_cell in x])
+        #    
+        shannon_entropy_value = 0
+        for cell in cells:
+            # number of residues
+            n_i = cells[cell]
+            # n_i (# residues type i) / M (# residues in column)
+            p_i = n_i / float(m_w)
+            entropy_i = p_i * (math.log(p_i, 2))
+            shannon_entropy_value += entropy_i
+        shannon_final = shannon_entropy_value * -1
+        shannon_entropy_window.append(shannon_final)
+    return shannon_entropy_window

@@ -140,13 +140,29 @@ vioplot(brac$Number.of.cells,lomelli$Number.of.cells,tithy$Number.of.cells,
         col=c("#899DA4","#899DA4","#899DA4","#899DA4","#899DA4","#899DA4","#899DA4","#899DA4",
               "#C93312","#C93312","#C93312","#C93312","#C93312","#C93312"))
 dev.off()
-lm.cellength <- lm(cell_lengths$Number.of.cells ~ cell_lengths$species)
+#remove RayL-system, L-systemMesic and L-systemXeric
+cell_lengths_subset <-subset(cell_lengths, cell_lengths$species != "RayL-system")
+cell_lengths_subset <-subset(cell_lengths_subset, cell_lengths_subset$species != "L-systemMesic")
+cell_lengths_subset <-subset(cell_lengths_subset, cell_lengths_subset$species != "L-systemXeric")
+cell_lengths_subset$species <- factor(cell_lengths_subset$species)
+lm.cellength <- lm(cell_lengths_subset$Number.of.cells ~ factor(cell_lengths_subset$species))
 summary(lm.cellength)
 library(emmeans)
-emm1 <-emmeans(lm.cellength, specs = pairwise ~ species)
-emm1$emmeans
+emm1 <-emmeans(lm.cellength,specs = pairwise ~ species,adjust="tukey")
 emm1$contrasts
-boxplot(log10(cell$vwt) ~ cell$simp.scal * cell$conductive)
+multcomp::cld(emm1$emmeans, alpha = 0.10, Letters=LETTERS)
+pdf("Figures/cell_lengths_bygroup.pdf")
+boxplot(cell_lengths_subset$Number.of.cells ~ cell_lengths_subset$species, notch=T,
+        col=c("#FAD510","#FAD510","#E2D200","#E2D200","#F2AD00","#F98400",
+             "#F2300F","#CB2314", "#FF0000","#00A08A","#35274A","#35274A",
+             "#35274A","#35274A","#354823","#1E1E1E"))
+dev.off()
+aggregate(Number.of.cells~ species, data=cell_lengths, mean)
+aggregate(Number.of.cells~ species, data=cell_lengths, sd)
+
+#cell_lengths  %>% group_by(species) %>%
+ # summarise(sd = sd(Number.of.cells))
+
 ############################################################
 #Graficar los tipos celulares
 tipos_celulares <- read.csv("Data/wordcountsR1.csv")

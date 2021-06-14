@@ -16,11 +16,13 @@ Ejemplo de los commandos:
 ### Análisis de las secuencias.
 Para hacer el análisis de las secuencias se tienen scripts de python con funciones globales que se cargan en otros scripts para hacer los calculos.
 wordanalysis.py es un script que cuenta con funciones para contar células, longiutdes de las hileras, contar palabaras, medir distancia Euclideana, estimar Lempel-Ziv algorithm y el valor de Shannon-Entropy.
- 
+#Previo a los análisis se corre el script l-systems.py para generar los diferentes sistemas-L con células hipotéticas.
 ####### Determinar la longitud de las series codificadas y de las frecuencias de tipos celulares.
 
     1) Se corre el script count_longitudes.py y este genera un archivo llamado cell_lengths.csv que se encuentra en Data/
-    2) Se corre el script count_transitions.py. Estima el número de células del sistema axial, y el número de palabras desde 2 hasta 11. Genera archivos llamados wordcounts*n*.csv, dónde n es la longitud de la palabra en que se contabiliza la célula.
+    2) Se corre el script count_transitions.py. Estima el número de células del sistema axial, y el número de palabras desde 2 hasta 10. Genera archivos llamados wordcounts*n*.csv, dónde n es la longitud de la palabra en que se contabiliza la célula.
 El siguiente arhivo en correr es el de count_transitionswithR.py que hace lo mismo que count_transitions.py pero incluye el conteo de Radios. 
-
+    3) En el script homogeneity_index se generan gráficas de la distribución de longitudes y tablas con las freucencias de tipos celulares.
+    4) Se corre el script chaos_representation para hacer el CGM. Este genera un archivo que se llama chaos_representation.csv
+    
 
