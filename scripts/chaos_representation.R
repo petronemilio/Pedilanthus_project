@@ -77,3 +77,10 @@ for(i in habit.factor) {
   plot(temp$X,temp$Y,main= i,col=as.factor(chaos_representation$Sample))
 }
 dev.off()
+
+#Plot demonstration:
+x=c(0,1,0,1,0.5,0.75,0.875,0.4375)
+y=c(0,0,1,1,0.5,0.75,0.875,0.9375)
+pdf("Figures/chaos_representation_sample.pdf")
+plot(x,y)
+dev.off()

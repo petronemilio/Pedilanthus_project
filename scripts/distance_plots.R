@@ -583,11 +583,44 @@ lines(shannonentropy.by.cell$Value[shannonentropy.by.cell$Name=="974_edited_cell
 ######Check out Shanon by window #####
 shannonentropy.by.window <- read.csv("Data/shannonentropy_window.csv", row.names=1)
 library(dplyr)
-shannonentropy.by.window <- shannonentropy.by.window %>% group_by(Lineage) %>% mutate(id = row_number())
+shannonentropy.by.window <- shannonentropy.by.window %>% 
+                            group_by(Sample,Lineage) %>% mutate(id = row_number())
 
 
 window947 <- subset(shannonentropy.by.window, Sample == "974_edited_cells.txt")
-plot(window947$id[window947$Lineage==2],window947$Value[window947$Lineage==2])
+window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
+window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
+prbeta <-subset(shannonentropy.by.window, Sample == "probLsystembeta_edited_cells.txt")
+
+pdf("Figures/shannon_window947.pdf")
+plot(window947$id[window947$Lineage==2],window947$Value[window947$Lineage==2],type = "l",lwd = 3)
+points(window947$id[window947$Lineage==3],window947$Value[window947$Lineage==3], col="green",type = "l",lwd = 3)
+points(window947$id[window947$Lineage==4],window947$Value[window947$Lineage==4], col="red",type = "l",lwd = 3)
+points(window947$id[window947$Lineage==5],window947$Value[window947$Lineage==5], col=pal1[1],type = "l",lwd = 3)
+points(window947$id[window947$Lineage==6],window947$Value[window947$Lineage==6], col=pal1[2],type = "l",lwd = 3)
+#points(window947$id[window947$Lineage==7],window947$Value[window947$Lineage==7], col=pal1[3],pch=19)
+#points(window947$id[window947$Lineage==8],window947$Value[window947$Lineage==8], col=pal2[1],pch=19)
+#points(window947$id[window947$Lineage==9],window947$Value[window947$Lineage==9], col=pal2[2],pch=19)
+#points(window947$id[window947$Lineage==10],window947$Value[window947$Lineage==10], col=pal2[3],pch=19)
+dev.off()
+
+pdf("Figures/shannon_window883.pdf")
+plot(window883$id[window883$Lineage==3],window883$Value[window883$Lineage==3],type = "l",lwd = 3)
+points(window883$id[window883$Lineage==2],window883$Value[window883$Lineage==2], col="green",type = "l",lwd = 3)
+points(window883$id[window883$Lineage==6],window883$Value[window883$Lineage==6], col="red",type = "l",lwd = 3)
+points(window883$id[window883$Lineage==4],window883$Value[window883$Lineage==4], col=pal1[1],type = "l",lwd = 3)
+points(window883$id[window883$Lineage==7],window883$Value[window883$Lineage==7], col=pal1[2],type = "l",lwd = 3)
+dev.off()
+
+pdf("Figures/probetaS.pdf")
+plot(prbeta$id[prbeta$Lineage==6],prbeta$Value[prbeta$Lineage==6],type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==2],prbeta$Value[prbeta$Lineage==2], col="green",type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==1],prbeta$Value[prbeta$Lineage==1], col="red",type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==4],prbeta$Value[prbeta$Lineage==4], col=pal1[1],type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==7],prbeta$Value[prbeta$Lineage==7], col=pal1[2],type = "l",lwd = 3)
+dev.off()
+
+summary(cell_lengths)
 
 ggplot(window947, aes(x= id, y = Value, color=Lineage)) +
   geom_point()

@@ -45,7 +45,14 @@ cell_lengths$habit <- as.character(species.id$habit[match.id])
 p  <- ggplot(cell_lengths, aes(Number.of.cells, colour=species, fill=species))
 p  <- p + geom_density(alpha=0.2)
 p
-
+cell_lengths_subset<-subset(cell_lengths, habit != "RayL-system")
+cell_lengths_subset<-subset(cell_lengths_subset, species != "L-systemMesic")
+cell_lengths_subset<-subset(cell_lengths_subset, species != "L-systemXeric")
+q  <- ggplot(cell_lengths_subset, aes(Number.of.cells, colour=species, fill=species))
+q  <- q + geom_density(alpha=0.2)
+pdf("Figures/lengths_density.pdf")
+q
+dev.off()
 pal<-c(wes_palette("Cavalcanti1"),wes_palette("GrandBudapest1"),wes_palette("GrandBudapest2"),
        wes_palette("FantasticFox1"))
 par(mar=c(7,5,1,1))
@@ -169,18 +176,23 @@ tipos_celulares <- read.csv("Data/wordcountsR1.csv")
 colnames(tipos_celulares)[1] = "Sample"
 match.id <- match(tipos_celulares$Sample,species.id$files)
 tipos_celulares$species <- as.character(species.id$species[match.id])
-#
+#replace nas with 0s
+tipos_celulares[is.na(tipos_celulares)] <- 0
+
 tipos_celulares$totalcells <-rowSums(tipos_celulares[,c(2:5)])
 
 tipos_celulares_freq <- tipos_celulares[,c(2:5,7)] / tipos_celulares[,7] 
 tipos_celulares_freq$sample <- tipos_celulares$Sample
+tipos_celulares_freq$species <- as.character(species.id$species[match.id])
+
 ##### Obtain a table of cells per sample and number of cells
 numberofcells <- table(cell_lengths$Sample)
 rownames(numberofcells)
 match.id <- match(tipos_celulares$Sample,rownames(numberofcells))
 tipos_celulares$numberofFiles <- as.character(numberofcells[match.id])
 write.table(tipos_celulares, "Data/cell_Lengths_Celltypes.csv")
-  
+tipos_celulares_freq$numberofFiles <- as.character(numberofcells[match.id])
+
 #
 #Reshape dat to plot
 tipos_celulares <- reshape(data=tipos_celulares, idvar="x", varying = c("V","F","P","R"),
@@ -189,19 +201,53 @@ tipos_celulares <- reshape(data=tipos_celulares, idvar="x", varying = c("V","F",
 ggplot(tipos_celulares) + 
   geom_bar(mapping=aes(x = Sample, y = Count, fill= time), stat = "identity",
            position = "fill") +coord_flip()
-
+pdf("Figures/count_freqs.pdf")
 ggplot(tipos_celulares) + 
   geom_bar(mapping=aes(x = species , y = Count, fill= time), stat = "identity",
            position = "fill") +coord_flip()
+dev.off()
+##
+tipos_celulares_freq <- reshape(data=tipos_celulares_freq, idvar="x", varying = c("V","F","P","R"),
+                           times=c("V","F","P","R"),v.name=c("Count"),direction="long")
+#
 #### Make plots removing cell rays #####
 tipos_fusiformes <- subset(tipos_celulares, time != "R")
+#tipos_fusiformes <-order(tipos_fusiformes$time)
 ggplot(tipos_fusiformes) + 
   geom_bar(mapping=aes(x = Sample, y = Count, fill= time), stat = "identity",
            position = "fill") + coord_flip()
-
+pdf("Figures/count_freqs_fusiform.pdf")
 ggplot(tipos_fusiformes) + 
-  geom_bar(mapping=aes(x = species, y = Count, fill= time), 
+  geom_bar(mapping=aes(x =species, y = Count, fill= time), 
            stat = "identity", position = "fill") + coord_flip()
+dev.off()
+##
+tipos_celulares_freq <- tipos_celulares[,c(2:5,7)] / tipos_celulares[,7] 
+tipos_celulares_freq$sample <- tipos_celulares$Sample
+tipos_celulares_freq$species <- as.character(species.id$species[match.id])
+
+#####Make statistical test #####
+tipos_celulares <- read.csv("Data/wordcountsR1.csv", row.names = 1)
+tipos_celulares <-subset(tipos_celulares, select= -R)
+contingency_table <-addmargins(as.matrix(tipos_celulares))
+#
+tipos_celulares_chi<-chisq.test(contingency_table)
+#####
+tipos_celulares_chi$expected
+#Gtest
+library(DescTools)
+tipos_celulares.gi <- GTest(contingency_table)
+tipos_celulares_chi$stdres
+#
+library(vcd) # useful package for graphics, beyond scope of this book
+
+png("Figures/contingency_table.png")
+mosaic(as.matrix(tipos_celulares), gp=shading_Friendly, residuals=tipos_celulares_chi$stdres,
+       residuals_type="Std\nresiduals", labeling=labeling_residuals)
+dev.off()
+tipos_celulares_chi
+library(RVAideMemoire)
+chisq.multcomp(contingency_table, p.method = "none")
 
 ####
 lvls <- names(sort(tapply(tipos_fusiformes$time == "Fibras", tipos_fusiformes$especies_por_muestra, mean)))
