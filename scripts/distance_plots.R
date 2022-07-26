@@ -2,7 +2,16 @@
 # In this script, plots and tables are made 
 # to analize different measures of word diversity 
 # and complexity
-
+pal1<-c("#a5c533", "#9658d8", "#59d261", "#9c3db2", "#75bb38", "#5f77f3", "#bebe35", "#3659cb",
+ "#40af43", "#ca37a3", "#39c477", "#ee68d2", "#4f901e", "#cf6fe4", "#8fa837", "#8163d6",
+ "#e6ac35", "#614bae", "#7dbe68", "#a33791", "#4dc38d", "#d32f80", "#49852d", "#ac84e6",
+ "#bca53a", "#507fe3", "#e47f2e", "#4a9de3", "#e55632", "#3ec7da", "#b82e25", "#59ceb8",
+ "#de3953", "#308949", "#e861ac", "#3d733d", "#ea93e1", "#606b16", "#82479d", "#90be7e",
+ "#6b4fa0", "#cb8e35", "#345fa9", "#b3511f", "#58b8e3", "#c33361", "#54a27a", "#eb658b",
+ "#287e63", "#c972bd", "#7c9451", "#5259a9", "#928432", "#8897ec", "#7e5f16", "#8775be",
+ "#bcb66e", "#a15195", "#1a6447", "#b04a79", "#33a29e", "#c24f4e", "#2e73a9", "#eb8665",
+ "#5e99c8", "#af6938", "#788acb", "#8e4b27", "#c0a8e8", "#5b672f", "#775696", "#d69e6c",
+ "#576196", "#8f6f3d", "#b17db7", "#9e4d51", "#e18db3", "#92465f", "#dc8484", "#8b4c76")
 ##### Load useful libraries #####
 library(tidyr)
 library(dplyr)
@@ -13,6 +22,8 @@ library(gplots)
 library(wesanderson)
 library(pheatmap)
 ##### Load files
+## Loading species id file
+species.id <- read.csv("meta/speciesID.csv")
 ## Loading euclidean distance files
 euc_dist2 <- read.csv("Data/euclidean_distance2.csv")
 euc_dist3 <- read.csv("Data/euclidean_distance3.csv")
@@ -105,6 +116,11 @@ wc.9 <- as.matrix(read.csv("Data/wordcounts9.csv", row.names = 1))
 wc.9[is.na(wc.9)] <- 0
 wc.10 <- as.matrix(read.csv("Data/wordcounts10.csv", row.names = 1))
 wc.10[is.na(wc.10)] <- 0
+wc.11 <- as.matrix(read.csv("Data/wordcounts11.csv", row.names = 1))
+wc.11[is.na(wc.11)] <- 0
+wc.12 <- as.matrix(read.csv("Data/wordcounts12.csv", row.names = 1))
+wc.12[is.na(wc.12)] <- 0
+
 #
 euc.dist.r.2 <- dist(wc.2)
 euc.dist.r.3 <- dist(wc.3)
@@ -150,72 +166,81 @@ plot(hclust(euc.dist.r10.freq))
 #Euclidean distances calculated with r are the same as the ones in python
 #Try to solve problem of different total of cells
 boxplot(rowSums(wc.2))
-hist(rowSums(wc.2))
-rowSums(wc.3)
-#Try to count cell number for each and calc the counts per 20,000
+hist(rowSums(wc.3))
+hist(rowSums(wc.3))
+hist(rowSums(wc.4))
+rowSums(wc.10)
+#Try to count cell number for each and calc the counts per 30,000
 rowSums(wc.2)
-dosporcadaveintemil <- rowSums(wc.2)/20000
-wc.2.porveintemil <- round((wc.2/dosporcadaveintemil),0)
-wc.2.porveintemil.freq <- wc.2.porveintemil/rowSums(wc.2.porveintemil)
-euc.dist.r.2.freq.std <- dist(wc.2.porveintemil.freq)
+dosporcadatreintamil <- rowSums(wc.2)/30000
+wc.2.portreintamil <- round((wc.2/dosporcadatreintamil),0)
+wc.2.portreintamil.freq <- wc.2.portreintamil/rowSums(wc.2.portreintamil)
+euc.dist.r.2.freq.std <- dist(wc.2.portreintamil.freq)
 plot(hclust(euc.dist.r.2.freq.std))
 #para 3
-tresporcadaveintemil <- rowSums(wc.3)/20000
-wc.3.porveintemil <- round((wc.3/tresporcadaveintemil),0)
-wc.3.porveintemil.freq <- wc.3.porveintemil/rowSums(wc.3.porveintemil)
-euc.dist.r.3.freq.std <- dist(wc.3.porveintemil.freq)
+tresporcadatreintamil <- rowSums(wc.3)/30000
+wc.3.portreintamil <- round((wc.3/tresporcadatreintamil),0)
+wc.3.portreintamil.freq <- wc.3.portreintamil/rowSums(wc.3.portreintamil)
+euc.dist.r.3.freq.std <- dist(wc.3.portreintamil.freq)
 plot(hclust(euc.dist.r.3.freq.std))
-
+wc.3.portreintamil["probLsystem_edited_cells.txt",]
 #para 4
-cuatroporcadaveintemil <- rowSums(wc.4)/20000
-wc.4.porveintemil <- round((wc.4/cuatroporcadaveintemil),0)
-wc.4.porveintemil.freq <- wc.4.porveintemil/rowSums(wc.4.porveintemil)
-euc.dist.r.4.std.pr <- dist(wc.4.porveintemil)
-euc.dist.r.4.freq.std <- dist(wc.4.porveintemil.freq)
+cuatroporcadatreintamil <- rowSums(wc.4)/30000
+wc.4.portreintamil <- round((wc.4/cuatroporcadatreintamil),0)
+wc.4.portreintamil.freq <- wc.4.portreintamil/rowSums(wc.4.portreintamil)
+euc.dist.r.4.std.pr <- dist(wc.4.portreintamil)
+euc.dist.r.4.freq.std <- dist(wc.4.portreintamil.freq)
 plot(hclust(euc.dist.r.4.freq.std))
 plot(hclust(euc.dist.r.4.std.pr))
 
 #para 5
-cincoporcadaveintemil <- rowSums(wc.5)/20000
-wc.5.porveintemil <- round((wc.5/cincoporcadaveintemil),0)
-wc.5.porveintemil.freq <- wc.5.porveintemil/rowSums(wc.5.porveintemil)
-euc.dist.r.5.freq.std <- dist(wc.5.porveintemil.freq)
+cincoporcadatreintamil <- rowSums(wc.5)/30000
+wc.5.portreintamil <- round((wc.5/cincoporcadatreintamil),0)
+wc.5.portreintamil.freq <- wc.5.portreintamil/rowSums(wc.5.portreintamil)
+euc.dist.r.5.freq.std <- dist(wc.5.portreintamil.freq)
 plot(hclust(euc.dist.r.5.freq.std))
 #para 6
-seisporcadaveintemil <- rowSums(wc.6)/20000
-wc.6.porveintemil <- round((wc.6/seisporcadaveintemil),0)
-wc.6.porveintemil.freq <- wc.6.porveintemil/rowSums(wc.6.porveintemil)
-euc.dist.r.6.freq.std <- dist(wc.6.porveintemil.freq)
+seisporcadatreintamil <- rowSums(wc.6)/30000
+wc.6.portreintamil <- round((wc.6/seisporcadatreintamil),0)
+wc.6.portreintamil.freq <- wc.6.portreintamil/rowSums(wc.6.portreintamil)
+euc.dist.r.6.freq.std <- dist(wc.6.portreintamil.freq)
 plot(hclust(euc.dist.r.6.freq.std))
 #Para 7
-sieteporcadaveintemil <- rowSums(wc.7)/20000
-wc.7.porveintemil <- round((wc.7/sieteporcadaveintemil),0)
-wc.7.porveintemil.freq <- wc.7.porveintemil/rowSums(wc.7.porveintemil)
-euc.dist.r.7.freq.std <- dist(wc.7.porveintemil.freq)
+sieteporcadatreintamil <- rowSums(wc.7)/30000
+wc.7.portreintamil <- round((wc.7/sieteporcadatreintamil),0)
+wc.7.portreintamil.freq <- wc.7.portreintamil/rowSums(wc.7.portreintamil)
+euc.dist.r.7.freq.std <- dist(wc.7.portreintamil.freq)
 plot(hclust(euc.dist.r.7.freq.std))
+#
+sieteporcadatreintamil <- rowSums(wc.7)/30000
+wc.7.portreintamil <- round((wc.7/sieteporcadatreintamil),0)
+wc.7.portreintamil.freq <- wc.7.portreintamil/rowSums(wc.7.portreintamil)
+euc.dist.r.7.freq.std <- dist(wc.7.portreintamil.freq)
+plot(hclust(euc.dist.r.7.freq.std))
+
 #para 8
-ochoporcadaveintemil <- rowSums(wc.8)/20000
-wc.8.porveintemil <- round((wc.8/ochoporcadaveintemil),0)
+ochoporcadatreintamil <- rowSums(wc.8)/30000
+wc.8.portreintamil <- round((wc.8/ochoporcadatreintamil),0)
 #Para 9
-nueveporcadaveintemil <- rowSums(wc.9)/20000
-wc.9.porveintemil <- round((wc.9/nueveporcadaveintemil),0)
+nueveporcadatreintamil <- rowSums(wc.9)/30000
+wc.9.portreintamil <- round((wc.9/nueveporcadatreintamil),0)
 #para 10
-diezporcadaveintemil <- rowSums(wc.10)/20000
-wc.10.porveintemil <- round((wc.10/diezporcadaveintemil),0)
-wc.10.porveintemil.freq <- wc.10.porveintemil/rowSums(wc.10.porveintemil)
-euc.dist.r.10.freq.std <- dist(wc.10.porveintemil.freq)
+diezporcadatreintamil <- rowSums(wc.10)/30000
+wc.10.portreintamil <- round((wc.10/diezporcadatreintamil),0)
+wc.10.portreintamil.freq <- wc.10.portreintamil/rowSums(wc.10.portreintamil)
+euc.dist.r.10.freq.std <- dist(wc.10.portreintamil.freq)
 plot(hclust(euc.dist.r.10.freq.std))
 
 #####
-euc.dist.r.2.std <- dist(wc.2.porveintemil)
-euc.dist.r.3.std <- dist(wc.3.porveintemil)
-euc.dist.r.4.std <- dist(wc.4.porveintemil)
-euc.dist.r.5.std <- dist(wc.5.porveintemil)
-euc.dist.r.6.std <- dist(wc.6.porveintemil)
-euc.dist.r.7.std <- dist(wc.7.porveintemil)
-euc.dist.r.8.std <- dist(wc.8.porveintemil)
-euc.dist.r.9.std <- dist(wc.9.porveintemil)
-euc.dist.r.10.std <- dist(wc.10.porveintemil)
+euc.dist.r.2.std <- dist(wc.2.portreintamil)
+euc.dist.r.3.std <- dist(wc.3.portreintamil)
+euc.dist.r.4.std <- dist(wc.4.portreintamil)
+euc.dist.r.5.std <- dist(wc.5.portreintamil)
+euc.dist.r.6.std <- dist(wc.6.portreintamil)
+euc.dist.r.7.std <- dist(wc.7.portreintamil)
+euc.dist.r.8.std <- dist(wc.8.portreintamil)
+euc.dist.r.9.std <- dist(wc.9.portreintamil)
+euc.dist.r.10.std <- dist(wc.10.portreintamil)
 ####
 plot(hclust(euc.dist.r.5.std))
 
@@ -290,8 +315,8 @@ plot(hclust(euc.dist.r.10))
 plot(hclust(euc.dist.r.10.std))
 dev.off()
 ####
-heatmap.2(as.matrix(euc.dist.r.2),key=TRUE,scale = "row", 
-            margins = c(10,12), cexRow=0.5)
+#heatmap.2(as.matrix(euc.dist.r.2),key=TRUE,scale = "row", 
+#            margins = c(10,12), cexRow=0.5)
 
 pheatmap(as.matrix(euc.dist.r.2.std), display_numbers = F)
 
@@ -345,23 +370,6 @@ lempel.by.cell <- read.csv("Data/lemplzivbyfile.csv", row.names=1)
 #See a exploratory boxplot
 boxplot(lempel.by.cell$Value ~ lempel.by.cell$Name)
 ###Add species identifiers to files
-#Make data frame too match species
-files <- levels(as.factor(lempel.by.cell$Name))
-species<- c("E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
-            "E. calcarata","E. calcarata","E. finkii","E. tithymaloides","E. conzattii",
-            "E. cyri","E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
-            "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana","E. lomelli",
-            "E. cyri", "E. cymbifera", "E. tithymaloides","E. tithymaloides","E. personata",
-            "E. personata","probL-system","probetaL-system","RayL-system")
-habit <- c("xeric","xeric","mesic","mesic",
-           "mesic","mesic","mesic","xeric","mesic",
-           "xeric","mesic","xeric","xeric","L-systemCSM",
-           "L-systemCSX","xeric","xeric","xeric","xeric",
-           "xeric","xeric","xeric","xeric","xeric",
-           "xeric","probL-system","probetaL-system","RayL-system")
-
-species.id <- as.data.frame(cbind(files,species,habit))
-
 match.id <- match(lempel.by.cell$Name,species.id$files)
 lempel.by.cell$species <- as.character(species.id$species[match.id])
 match.id <- match(lempel.by.cell$Name,species.id$files)
@@ -392,7 +400,10 @@ lempel.cellhabit.lm <-lm(lempel.by.cell$Value~lempel.by.cell$habit)
 summary(lempel.cellhabit.lm)
 plot(lempel.cellhabit.lm)
 library(emmeans)
-emmeans(lempel.cellhabit.lm, ~ habit)
+emm1 <- emmeans(lempel.cellhabit.lm, specs = pairwise ~ habit,adjust="tukey")
+emm1$contrasts
+multcomp::cld(emm1$emmeans, alpha = 0.10, Letters=LETTERS)
+
 lempel.cellsp.lm <-lm(lempel.by.cell$Value~lempel.by.cell$species)
 summary(lempel.cellsp.lm)
 ##Remove rlsystem, and context sensitive lsystems
@@ -513,7 +524,6 @@ boxplot(shannonentropy.by.cell$Value ~ shannonentropy.by.cell$habit,col=colores,
         las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
 dev.off()
 
-
 pdf("Figures/entropybyfile.pdf")
 par(mfrow = c(2,1))
 z=1
@@ -586,11 +596,31 @@ library(dplyr)
 shannonentropy.by.window <- shannonentropy.by.window %>% 
                             group_by(Sample,Lineage) %>% mutate(id = row_number())
 
-
+write.csv(shannonentropy.by.window, "Data/shannonentropy_window_id.csv")
 window947 <- subset(shannonentropy.by.window, Sample == "974_edited_cells.txt")
 window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
 window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
+windowepm10 <- subset(shannonentropy.by.window, Sample == "EPM10_edited_cells.txt")
 prbeta <-subset(shannonentropy.by.window, Sample == "probLsystembeta_edited_cells.txt")
+#PLot every sample
+samples<-factor(shannonentropy.by.window$Sample)
+for (i in samples){
+  plot(shannonentropy.by.window$id[shannonentropy.by.window==i],
+       shannonentropy.by.window$Value[shannonentropy.by.window==i],type = "l",lwd = 3)
+}
+plot(window947$id,window947$Value,type = "l")
+plot(window947$id[window947$Lineage==26],window947$Value[window947$Lineage==26],type = "l",lwd = 2,
+     xlab="Window position",ylab = "Shannon Value")
+
+lineage<-factor(windowepm10$Lineage)
+for (i in lineage){
+  points(windowepm10$id[windowepm10$Lineage==i], windowepm10$Value[windowepm10$Lineage==i], 
+         col="green",type = "l",lwd = 3,
+         col=pal1)
+}
+plot(windowepm10$id,windowepm10$Value, type = "l",col=pal1)
+plot(window883$id,window883$Value,type = "l",lwd = 3)
+
 
 pdf("Figures/shannon_window947.pdf")
 plot(window947$id[window947$Lineage==2],window947$Value[window947$Lineage==2],type = "l",lwd = 3)
@@ -626,3 +656,227 @@ ggplot(window947, aes(x= id, y = Value, color=Lineage)) +
   geom_point()
 
 ggplot(lempel.by.cell, aes(x = Name, y = Value, color = species)) + geom_boxplot()
+
+#####Trying to get total of words per length#####
+wc.2 <- as.data.frame(wc.2)
+wc.2$sample <- rownames(wc.2)
+wc.2<-melt(wc.2)
+#Create table counting number of words per sample
+wc.2 <-subset(wc.2, wc.2$value != 0) #First remove words with 0 counts
+nwords2 <- wc.2 %>% group_by(sample) %>% tally()
+#
+wc.3 <- as.data.frame(wc.3)
+wc.3$sample <- rownames(wc.3)
+wc.3 <- melt(wc.3)
+#remove 0 and create table
+wc.3 <-subset(wc.3, wc.3$value != 0) 
+nwords3 <- wc.3 %>% group_by(sample) %>% tally()
+#
+wc.4 <- as.data.frame(wc.4)
+wc.4$sample <- rownames(wc.4)
+wc.4 <- melt(wc.4)
+#remove 0 counts and table
+wc.4 <- subset(wc.4, wc.4$value != 0) 
+nwords4 <- wc.4 %>% group_by(sample) %>% tally()
+#
+wc.5 <- as.data.frame(wc.5)
+wc.5$sample <- rownames(wc.5)
+wc.5 <- melt(wc.5)
+#remove 0s
+wc.5 <- subset(wc.5, wc.5$value != 0)
+nwords5 <- wc.5 %>% group_by(sample) %>% tally()
+#
+wc.6 <- as.data.frame(wc.6)
+wc.6$sample <- rownames(wc.6)
+wc.6 <- melt(wc.6)
+#remove 0s
+wc.6 <- subset(wc.6, wc.6$value != 0)
+nwords6 <- wc.6 %>% group_by(sample) %>% tally()
+#
+wc.7 <- as.data.frame(wc.7)
+wc.7$sample <- rownames(wc.7)
+wc.7 <- melt(wc.7)
+#remove 0s
+wc.7 <- subset(wc.7, wc.7$value != 0)
+nwords7 <- wc.7 %>% group_by(sample) %>% tally()
+#
+wc.8 <- as.data.frame(wc.8)
+wc.8$sample <- rownames(wc.8)
+wc.8 <- melt(wc.8)
+#remove 0s
+wc.8 <- subset(wc.8, wc.8$value != 0)
+nwords8 <- wc.8 %>% group_by(sample) %>% tally()
+#
+wc.9 <- as.data.frame(wc.9)
+wc.9$sample <- rownames(wc.9)
+wc.9 <- melt(wc.9)
+#remove 0s
+wc.9 <- subset(wc.9, wc.9$value != 0)
+nwords9 <- wc.9 %>% group_by(sample) %>% tally()
+####
+wc.10 <- as.data.frame(wc.10)
+wc.10$sample <- rownames(wc.10)
+wc.10 <- melt(wc.10)
+######
+wc.10 <- subset(wc.10, wc.10$value != 0)
+nwords10 <- wc.10 %>% group_by(sample) %>% tally()
+#11 and 12
+wc.11 <- as.data.frame(wc.11)
+wc.11$sample <- rownames(wc.11)
+wc.11 <- melt(wc.11)
+######
+wc.11 <- subset(wc.11, wc.11$value != 0)
+nwords11 <- wc.11 %>% group_by(sample) %>% tally()
+#12
+wc.12 <- as.data.frame(wc.12)
+wc.12$sample <- rownames(wc.12)
+wc.12 <- melt(wc.12)
+######
+wc.12 <- subset(wc.12, wc.12$value != 0)
+nwords12 <- wc.12 %>% group_by(sample) %>% tally()
+##Making common data frame 
+nwords <- rbind(cbind(nwords2,wordLength =rep(2,nrow(nwords2))),
+      cbind(nwords3,wordLength =rep(3,nrow(nwords3))),
+      cbind(nwords4,wordLength =rep(4,nrow(nwords4))),
+      cbind(nwords5,wordLength =rep(5,nrow(nwords5))),
+      cbind(nwords6,wordLength =rep(6,nrow(nwords6))),
+      cbind(nwords7,wordLength =rep(7,nrow(nwords7))),
+      cbind(nwords8,wordLength =rep(8,nrow(nwords8))),
+      cbind(nwords9,wordLength =rep(9,nrow(nwords9))),
+      cbind(nwords10,wordLength =rep(10,nrow(nwords10))),
+      cbind(nwords11,wordLength =rep(11,nrow(nwords11))),
+      cbind(nwords12,wordLength =rep(12,nrow(nwords12))))
+#
+rm(nwords10,nwords2,nwords3,nwords4, nwords5,nwords6,
+   nwords7, nwords8, nwords9,nwords11,nwords12)
+#
+plot(log10(nwords$n) ~ nwords$wordLength)
+nwords <- subset(nwords, nwords$sample != "contextmesicLsystem_edited_cells.txt" &
+                   nwords$sample != "contextxericLsystem_edited_cells.txt" & 
+                   nwords$sample != "Ray_Lsystem_edited_cells.txt")
+matcher <- match(nwords$sample, species.id$files)
+nwords$species <- species.id$species[matcher]
+nwords$habit <- species.id$habit[matcher]
+
+nwordslog <-nwords %>% ggplot(aes(x= wordLength, y= log10(n), group = sample, color= habit)) +
+  geom_line(size = 1)
+nwordsnormal <-nwords %>% ggplot(aes(x= wordLength, y= n, group = sample, color= habit)) +
+  geom_line(size = 1)
+ggsave("Figures/nwords_log.pdf",nwordslog, device = "pdf")
+ggsave("Figures/nwords_notlog.pdf",nwordsnormal, device = "pdf")
+ggsave("Figures/nwords_log.png",nwordslog, device = "png")
+ggsave("Figures/nwords_notlog.png",nwordsnormal, device = "png")
+#
+
+#remove specific factors from plot
+nwords.temp <- subset(nwords, nwords$habit != "probL-system" &
+                   nwords$habit != "probetaL-system") 
+nwords_sp <- nwords.temp %>% ggplot(aes(x= wordLength, y= n, group = sample, color= species)) +
+  geom_line(size = 1)
+nwords_sphabit <- nwords.temp %>% ggplot(aes(x= wordLength, y= n, group = sample, color= habit)) +
+  geom_line(size = 1)
+ggsave("Figures/nwords_sp.pdf",nwords_sp, device = "pdf")
+ggsave("Figures/nwords_sphabit.pdf",nwords_sphabit, device = "pdf")
+ggsave("Figures/nwords_sp.png",nwords_sp, device = "png")
+ggsave("Figures/nwords_sphabit.png",nwords_sphabit, device = "png")
+
+library(wordcloud)
+#pdf("Figures/WordCloudCoal886.pdf")
+#wordcloud(coal886$variable,coal886$value, max.words =100,min.freq=3,scale=c(4,.5),
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudDia11.pdf")
+#wordcloud(dia11$variable,dia11$value, max.words =100,min.freq=3,scale=c(4,.5),
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudPeri843.pdf")
+#wordcloud(peri843$variable,peri843$value, max.words =100,min.freq=3,scale=c(4,.5),
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudFin917.pdf")
+#wordcloud(finki917$variable,finki917$value, max.words =100,min.freq=3,scale=c(4,.5), 
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudCym979.pdf")
+#wordcloud(cym979$variable,cym979$value, max.words =100,min.freq=3,scale=c(4,.5), 
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudTyth2.pdf")
+#wordcloud(tyth2$variable,tyth2$value, max.words =100,min.freq=3,scale=c(4,.5), 
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudCyr14.pdf")
+#wordcloud(cyr14$variable,cyr14$value, max.words =100,min.freq=3,scale=c(4,.5), 
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/WordCloudTeh981.pdf")
+#wordcloud(teh981$variable,teh981$value, max.words =100,min.freq=3,scale=c(4,.5), 
+#          random.order = FALSE)
+#dev.off()
+#pdf("Figures/problsys.pdf")
+#wordcloud(problsys$variable,problsys$value, max.words =100,min.freq=3,scale=c(4,.5), 
+#          random.order = FALSE)
+#dev.off()
+######
+#plot(epm11_wc2$value ~ epm11_wc2$variable)
+#plot(log10(nwords10$n)~ as.factor(nwords10$sample))
+#plot(nwords5$n ~ as.factor(nwords5$sample))
+
+######
+library(vegan)
+
+as.matrix(problsys)
+div2 <- as.data.frame(diversity(wc.2.portreintamil))
+div3 <- as.data.frame(diversity(wc.3.portreintamil))
+div4 <- as.data.frame(diversity(wc.4.portreintamil))
+div5 <- as.data.frame(diversity(wc.5.portreintamil))
+div6 <- as.data.frame(diversity(wc.6.portreintamil))
+div7 <- as.data.frame(diversity(wc.7.portreintamil))
+div8 <- as.data.frame(diversity(wc.8.portreintamil))
+div9 <- as.data.frame(diversity(wc.9.portreintamil))
+div10 <- as.data.frame(diversity(wc.10.portreintamil))
+diversity(wc.10.portreintamil)
+?diversity
+######
+rownames(div2)
+#
+div3$sample <- rownames(div3)
+matcher <- match(div3$sample,species.id$files)
+div3$species <- species.id$species[matcher]
+div3$habit <- species.id$habit[matcher]
+boxplot(div3$`diversity(wc.3.portreintamil)` ~ div3$species)
+boxplot(div3$`diversity(wc.3.portreintamil)` ~ div3$habit)
+#
+div5$sample <- rownames(div5)
+matcher <- match(div5$sample,species.id$files)
+div5$species <- species.id$species[matcher]
+div5$habit <- species.id$habit[matcher]
+boxplot(div5$`diversity(wc.5.portreintamil)` ~ div5$species)
+boxplot(div5$`diversity(wc.5.portreintamil)` ~ div5$habit)
+#
+matcher <- match(rownames(div8),species.id$files)
+div8$species <- species.id$species[matcher]
+div8$habit <- species.id$habit[matcher]
+boxplot(div8$`diversity(wc.8.portreintamil)` ~ div8$species)
+boxplot(div8$`diversity(wc.8.portreintamil)` ~ div8$habit)
+lm8 <- lm(div8$`diversity(wc.8.portreintamil)`~ div8$habit)
+#
+matcher <- match(rownames(div10),species.id$files)
+div10$species <- species.id$species[matcher]
+div10$habit <- species.id$habit[matcher]
+boxplot(div10$`diversity(wc.10.portreintamil)` ~ div10$species)
+boxplot(div10$`diversity(wc.10.portreintamil)` ~ div10$habit)
+lm10 <- lm(div10$`diversity(wc.10.portreintamil)`~ div10$habit)
+summary(lm10)
+pdf("Figures/wordsdiversity.pdf")
+par(mfrow=c(2, 2))
+boxplot(div3$`diversity(wc.3.portreintamil)` ~ div3$habit)
+boxplot(div5$`diversity(wc.5.portreintamil)` ~ div5$habit)
+boxplot(div8$`diversity(wc.8.portreintamil)` ~ div8$habit)
+boxplot(div10$`diversity(wc.10.portreintamil)` ~ div10$habit)
+dev.off()
+###Rarefraction curve
+spAbund <- rowSums(wc.10.portreintamil)  #gives the number of individuals found in each plot
+raremin <- min(rowSums(wc.10.portreintamil))  #rarefaction uses the smallest number of observations per sample to extrapolate the expected number if all other samples only had that number of observations
+sRare <- rarefy(wc.10.portreintamil, raremin) # now use function rarefy
+rarecurve(wc.5.portreintamil, col = "blue")

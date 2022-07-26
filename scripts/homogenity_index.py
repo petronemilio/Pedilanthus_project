@@ -178,8 +178,19 @@ for k, v in support_code.items():
     prueba_list=[]
     for z in v:
          support_index[k].append(homogenity_index(z)) 
+#
+my_lens = {} #empty dictionary to add length of cell files
+for keys, values in filenames.items():
+    with open(path+values[0]) as f:
+        x = f.readlines()
+        filenames.setdefault(keys,[]).append(x)
+    values[1] = [x.strip() for x in values[1]]  
+    values[1] = [x.upper() for x in values[1]]  
+    my_lens[values[0]]=[]
+    for s in values[1]:
+        my_lens[values[0]].append(len(s))
 
-#Create a pandas data frame
+#####Create a pandas data frame
 df = pd.DataFrame(columns=['sp'])
 for k,v in storage_index.items():
     x = np.repeat(k,len(v))
@@ -202,6 +213,12 @@ for k,v in support_index.items():
     for i in range(0,len(v)):
         indexall.append(v[i])
 df["support"]= indexall
+
+indexall=[]
+for k,v in my_lens.items():    
+    for i in range(0,len(v)):
+        indexall.append(v[i])
+df["length"]= indexall
 
 df.to_csv('../Data/homogentiy_index.csv')
 

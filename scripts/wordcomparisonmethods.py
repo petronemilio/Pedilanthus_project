@@ -12,11 +12,11 @@ import itertools
 import csv
 #Load all files using os and re
 ##
-path = '../Data/Cell_files_data/'
+path = '../Data/Images/P_tithymaloides/EPM6/comparison/'
 files = os.listdir(path)
 filenames = {} #Create a dictionary to save paths for all data cells
 for i in files:
-    m = re.search(r'.*[^_edited_cells.txt]',i)
+    m = re.search(r'.*[^.txt]',i)
     filenames[m.group()] = [i]
 
 #Loop to load the files of cells and append them in filenames
@@ -44,7 +44,7 @@ for values in filenames.values():
 
 #################  Create a dictionary to save the word counting #########
 word_diversity = {} #Empty dictionary to add values into
-for i in range(1,15):
+for i in range(1,11):
     word_diversity[i]={}
     for values in filenames.values(): 
         word_diversity[i][values[0]] = wordanalysis.get_all_words(values[2], i)
@@ -53,7 +53,7 @@ for i in range(1,15):
 val = 1
 for x in word_diversity.values():
     wordcount = pd.DataFrame.from_dict(x, orient='index')
-    wordcount.to_csv('../Data/wordcounts'+ str(val)+'.csv', index = True)    
+    wordcount.to_csv('../Data/Images/P_tithymaloides/EPM6/comparison/wordcounts'+ str(val)+'.csv', index = True)    
     val += 1
 
 ################################# Calc Euclidean distance   #################
@@ -65,7 +65,7 @@ for k, v in word_diversity.items():
     for k1, k2 in itertools.combinations(v, 2):
         my_list.append([k1,k2, wordanalysis.euc_dist(v[k1], v[k2])])
     euc_list[k]=my_list
-    f = "../Data/euclidean_distance"+str(k)+'.csv'
+    f = "../Data/Images/P_tithymaloides/EPM6/comparison/euclidean_distance"+str(k)+'.csv'
     # writing to csv file  
     with open(f, 'w') as csvfile:  
     # creating a csv writer object  

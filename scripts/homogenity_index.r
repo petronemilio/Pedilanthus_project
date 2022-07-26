@@ -23,19 +23,20 @@ my_palette <- c(pal1,pal2,pal3,pal4)
 #Graficar la distribución de las longitudes de las series.
 cell_lengths <- read.csv("Data/cell_lengths.csv")
 files <- levels(as.factor(cell_lengths$Sample))
-species<- c("E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
-            "E. calcarata","E. calcarata","E. finkii","E. tithymaloides","E. conzattii",
-            "E. cyri","E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
+species<- c("E. peritropoides","E. peritropoides","E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
+            "E. coalcomanensis","E. calcarata","E. calcarata","E. finkii","E. calcarata","E. tithymaloides",
+            "E. conzattii","E. cyri","E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
             "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana","E. lomelli",
             "E. cyri", "E. cymbifera", "E. tithymaloides","E. tithymaloides","E. personata",
             "E. personata","probL-system","probetaL-system","RayL-system")
-habit <- c("xeric","xeric","mesic","mesic",
-           "mesic","mesic","mesic","xeric","mesic",
-           "xeric","mesic","xeric","xeric","L-systemCSM",
+habit <- c("mesic","mesic","xeric","xeric","mesic","mesic",
+           "mesic","mesic","mesic","mesic","mesic","xeric",
+           "mesic","xeric","mesic","xeric","xeric","L-systemCSM",
            "L-systemCSX","xeric","xeric","xeric","xeric",
            "xeric","xeric","xeric","xeric","xeric",
            "xeric","probL-system","probetaL-system","RayL-system")
 species.id <- as.data.frame(cbind(files,species,habit))
+write.csv(species.id,"meta/speciesID.csv")
 #####
 match.id <- match(cell_lengths$Sample,species.id$files)
 cell_lengths$species <- as.character(species.id$species[match.id])
@@ -63,7 +64,8 @@ boxplot(cell_lengths$Number.of.cells~species, cell_lengths,horizontal=TRUE,
         col=new_pal)
 boxplot(cell_lengths$Number.of.cells~cell_lengths$species,
         col=new_pal)
-
+#Remove cell lengths minor to 3 cells
+cell_lengths <- subset(cell_lengths, cell_lengths$Number.of.cells > 3)
 cell_lengths$species <- with(cell_lengths, reorder(species,Number.of.cells,mean))
 
 boxplot(Number.of.cells~species, cell_lengths,horizontal = TRUE, las=1.5,
@@ -80,8 +82,10 @@ boxplot(Number.of.cells~species, cell_lengths,horizontal = TRUE, las=1.5,
 boxplot(cell_lengths$Number.of.cells~cell_lengths$habit,
         col=new_pal)
 ##
+summary(cell_lengths$Number.of.cells)
 cellfilemean<-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$species), FUN=mean)
-
+aggregate(cell_lengths$Number.of.cells, list(cell_lengths$Sample), FUN=mean)
+numbercells<-cell_lengths %>% group_by(Sample) %>% tally()
 ##
 hist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"])
 hist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"])
@@ -92,7 +96,6 @@ q  <- ggplot(cell_lengths, aes(Number.of.cells, colour=habit, fill=habit))
 q  <- q + geom_density(alpha=0.2)
 q
 
-
 descdist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"], discrete = FALSE)
 descdist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"], discrete = FALSE)
 
@@ -101,8 +104,8 @@ ggplot(cell_lengths, aes(x =habit,y=Number.of.cells, fill = habit)) +
   scale_y_continuous(breaks = c(0,50,100,150,200,250,300,350,400,500,600))+
   scale_fill_manual(values=c(pal))+
   theme(legend.position = "none") 
- 
-
+###
+descdist(cell_lengths$Number.of.cells)
 # Draw the plot
 calca <- subset(cell_lengths, species=="E. calcarata", select=c(species,Number.of.cells))
 tithy <- subset(cell_lengths, species=="E. tithymaloides", select=c(species, Number.of.cells))
@@ -152,23 +155,39 @@ cell_lengths_subset <-subset(cell_lengths, cell_lengths$species != "RayL-system"
 cell_lengths_subset <-subset(cell_lengths_subset, cell_lengths_subset$species != "L-systemMesic")
 cell_lengths_subset <-subset(cell_lengths_subset, cell_lengths_subset$species != "L-systemXeric")
 cell_lengths_subset$species <- factor(cell_lengths_subset$species)
-lm.cellength <- lm(cell_lengths_subset$Number.of.cells ~ factor(cell_lengths_subset$species))
+lm.cellength <- lm(log10(cell_lengths_subset$Number.of.cells) ~ factor(cell_lengths_subset$species))
 summary(lm.cellength)
+#
+lm.cellength.stdres <- rstandard(lm.cellength)
+qqnorm(lm.cellength.stdres, 
+         ylab="Standardized Residuals", 
+         xlab="Normal Scores", 
+             main="Cell lengths from fusiform initials") 
+qqline(lm.cellength.stdres)
+qqplot(cell_lengths$Number.of.cells)
 library(emmeans)
 emm1 <-emmeans(lm.cellength,specs = pairwise ~ species,adjust="tukey")
 emm1$contrasts
 multcomp::cld(emm1$emmeans, alpha = 0.10, Letters=LETTERS)
 pdf("Figures/cell_lengths_bygroup.pdf")
-boxplot(cell_lengths_subset$Number.of.cells ~ cell_lengths_subset$species, notch=T,
-        col=c("#FAD510","#FAD510","#E2D200","#E2D200","#F2AD00","#F98400",
-             "#F2300F","#CB2314", "#FF0000","#00A08A","#35274A","#35274A",
-             "#35274A","#35274A","#354823","#1E1E1E"))
+boxplot(log10(cell_lengths_subset$Number.of.cells) ~ cell_lengths_subset$species, notch=T,
+        col=c("#FAD510","#FAD510","#E2D200","#F2AD00","#F2AD00","#F2AD00",
+             "#F98400", "#F2AD00","#F2300F","#CB2314", "#FF0000","#35274A","#35274A",
+             "#35274A","#35274A","#354823"))
 dev.off()
 aggregate(Number.of.cells~ species, data=cell_lengths, mean)
 aggregate(Number.of.cells~ species, data=cell_lengths, sd)
-
-#cell_lengths  %>% group_by(species) %>%
- # summarise(sd = sd(Number.of.cells))
+#Making by growth form
+lm.cellength.habit <- lm(log10(cell_lengths_subset$Number.of.cells) ~ factor(cell_lengths_subset$habit))
+summary(lm.cellength.habit)
+emm2 <-emmeans(lm.cellength.habit,specs = pairwise ~ habit,adjust="tukey")
+emm2$contrasts
+multcomp::cld(emm2$emmeans, alpha = 0.10, Letters=LETTERS)
+pwpm(emm2$emmeans)
+pdf("Figures/cell_lengths_byhabit.pdf")
+boxplot(log10(cell_lengths_subset$Number.of.cells) ~ cell_lengths_subset$habit, notch=T,
+        col=c("#FAD510","#CB2314","#FF0000","#35274A"))
+dev.off()
 
 ############################################################
 #Graficar los tipos celulares
@@ -180,7 +199,6 @@ tipos_celulares$species <- as.character(species.id$species[match.id])
 tipos_celulares[is.na(tipos_celulares)] <- 0
 
 tipos_celulares$totalcells <-rowSums(tipos_celulares[,c(2:5)])
-
 tipos_celulares_freq <- tipos_celulares[,c(2:5,7)] / tipos_celulares[,7] 
 tipos_celulares_freq$sample <- tipos_celulares$Sample
 tipos_celulares_freq$species <- as.character(species.id$species[match.id])
@@ -191,6 +209,21 @@ rownames(numberofcells)
 match.id <- match(tipos_celulares$Sample,rownames(numberofcells))
 tipos_celulares$numberofFiles <- as.character(numberofcells[match.id])
 write.table(tipos_celulares, "Data/cell_Lengths_Celltypes.csv")
+#Obtain total of cells codified without the L-systems
+tipos_celulares_withoutLS <-subset(tipos_celulares, tipos_celulares$Sample!="contextmesicLsystem_edited_cells.txt"&
+         tipos_celulares$Sample != "contextxericLsystem_edited_cells.txt" & 
+         tipos_celulares$Sample != "contextxericLsystem_edited_cells.txt" & 
+         tipos_celulares$Sample != "probLsystem_edited_cells.txt" & 
+         tipos_celulares$Sample != "probLsystembeta_edited_cells.txt" & 
+         tipos_celulares$Sample != "Ray_Lsystem_edited_cells.txt")
+sum(tipos_celulares_withoutLS$totalcells)
+sum(tipos_celulares_withoutLS$F)/sum(tipos_celulares_withoutLS$totalcells)
+sum(tipos_celulares_withoutLS$R)/sum(tipos_celulares_withoutLS$totalcells)
+sum(tipos_celulares_withoutLS$P)/sum(tipos_celulares_withoutLS$totalcells)
+sum(tipos_celulares_withoutLS$V)/sum(tipos_celulares_withoutLS$totalcells)
+
+sum(as.numeric(tipos_celulares_withoutLS$numberofFiles))
+tipos_celulares_freq$numberofFiles <- as.character(numberofcells[match.id])
 tipos_celulares_freq$numberofFiles <- as.character(numberofcells[match.id])
 
 #
@@ -212,10 +245,15 @@ tipos_celulares_freq <- reshape(data=tipos_celulares_freq, idvar="x", varying = 
 #
 #### Make plots removing cell rays #####
 tipos_fusiformes <- subset(tipos_celulares, time != "R")
+tipos_fusiformes$countfreq <-tipos_fusiformes$Count/tipos_fusiformes$totalcells
 #tipos_fusiformes <-order(tipos_fusiformes$time)
+tipos_fusiformes<-tipos_fusiformes[with(tipos_fusiformes, order(time,countfreq)), ]
 ggplot(tipos_fusiformes) + 
-  geom_bar(mapping=aes(x = Sample, y = Count, fill= time), stat = "identity",
+  geom_bar(mapping=aes(x =species, y = countfreq, fill= time), stat = "identity",
            position = "fill") + coord_flip()
+ggplot(tipos_fusiformes,aes(x =species, y = countfreq, fill= time))+ 
+  geom_col(position = position_fill(reverse = TRUE)) + coord_flip()
+
 pdf("Figures/count_freqs_fusiform.pdf")
 ggplot(tipos_fusiformes) + 
   geom_bar(mapping=aes(x =species, y = Count, fill= time), 
@@ -246,8 +284,8 @@ mosaic(as.matrix(tipos_celulares), gp=shading_Friendly, residuals=tipos_celulare
        residuals_type="Std\nresiduals", labeling=labeling_residuals)
 dev.off()
 tipos_celulares_chi
-library(RVAideMemoire)
-chisq.multcomp(contingency_table, p.method = "none")
+#library(RVAideMemoire)
+#chisq.multcomp(contingency_table, p.method = "none")
 
 ####
 lvls <- names(sort(tapply(tipos_fusiformes$time == "Fibras", tipos_fusiformes$especies_por_muestra, mean)))
@@ -272,8 +310,18 @@ match.id <- match(homogenity_index$X0,species.id$files)
 homogenity_index$sp <- as.character(species.id$species[match.id])
 #    
 homogenity_index$habit <- as.character(species.id$habit[match.id])
-  
+####
+#Calc the length proportion standaridze per sample...
+prueba<-homogenity_index %>% group_by(X0) %>%
+  top_n(1, length) 
+prueba <- prueba[!duplicated(prueba[ , c("X0", "length")]), ]  # Delete rows
+matcher <- match(homogenity_index$X0, prueba$X0)
+homogenity_index$maxlength<- prueba$length[matcher]
+homogenity_index$lengthstd <- (homogenity_index$length)/(homogenity_index$maxlength)
+
 ggplot(homogenity_index, aes(x=support, y=conductivity, colour=sp))+
+  geom_point() #+ scale_color_manual(values=my_palette)
+ggplot(homogenity_index, aes(x=lengthstd, y=conductivity, colour=habit))+
   geom_point() #+ scale_color_manual(values=my_palette)
 
 pdf("Figures/storage_conductivity.pdf") # Para guardar en PDF
@@ -342,28 +390,56 @@ plot3d(geometry[,1],geometry[,2],geometry[,3])
 text3d(geometry[,1],geometry[,2],geometry[,3],rownames(geometry))
 points3d(geometry[,1],geometry[,2],geometry[,3], size = 5)
 
-#
-sp.974 <- subset(homogenity_index, homogenity_index$X0 == '974')  
-sp.883 <- subset(homogenity_index, homogenity_index$X0 == '883')  
-sp.probLsystem <- subset(homogenity_index, homogenity_index$X0 == 'probLsystem') 
-sp.contextmesicLsystem <- subset(homogenity_index, 
-                                 homogenity_index$X0 == 'contextmesicLsystem')
-
-
-ggplot(sp.974, aes(x=storage, y=conductivity, colour=X0))+
-  geom_point()
-
-ggplot(sp.883, aes(x=storage, y=conductivity, colour=X0))+
-  geom_point()
-
-ggplot(sp.probLsystem, aes(x=storage, y=conductivity, colour=X0))+
-  geom_point()
-
-
-ggplot(sp.contextmesicLsystem, aes(x=storage, y=conductivity, colour=X0))+
-  geom_point()
 #scale_color_manual(values=c("#c80966","#84de66","#8369e1","#d89816",
  #                             "#0152a1","#005e18","#abb2ff"))+
   #theme_bw()
-scale_
 
+###Plot using length
+plot(homogenity_index$conductivity~homogenity_index$length)
+plot(homogenity_index$storage ~ homogenity_index$length)
+points(homogenity_index$storage[homogenity_index$habit=="mesic"] ~
+       homogenity_index$length[homogenity_index$habit=="mesic"], col="green")
+points(homogenity_index$storage[homogenity_index$habit=="xeric"] ~
+         homogenity_index$length[homogenity_index$habit=="xeric"], col="red")
+plot(homogenity_index$conductivity ~ homogenity_index$length)
+points(homogenity_index$conductivity[homogenity_index$habit=="mesic"] ~
+         homogenity_index$length[homogenity_index$habit=="mesic"], col="green")
+points(homogenity_index$conductivity[homogenity_index$habit=="xeric"] ~
+         homogenity_index$length[homogenity_index$habit=="xeric"], col="red")
+homogenity_index_subset <- subset(homogenity_index,homogenity_index$sp != "L-systemXeric" & 
+         homogenity_index$sp != "L-systemMesic" & homogenity_index$sp != "RayL-system" &
+           homogenity_index$sp != "probL-system")
+#
+pal4 <-paleta[as.numeric(as.factor(homogenity_index_subset$habit))]
+pdf("Figures/morphospace_length.pdf")
+scatterplot3d(homogenity_index_subset$length,homogenity_index_subset$conductivity,
+              homogenity_index_subset$support,
+              angle=35, pch=16, color=pal4,
+              main="3D Scatter Plot",xlab = "Cell length",ylab = "Support index",
+              zlab = "Conductivity index") 
+legend("bottom", legend = levels(as.factor(homogenity_index_subset$habit)),
+       col =c("#d39e47","#b05ac8","#56b348") , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
+dev.off()
+scatterplot3d(homogenity_index$support,homogenity_index$conductivity,
+              homogenity_index$length,
+              angle=40, pch=16, color=pal3,
+              main="3D Scatter Plot",xlab = "Cell length",ylab = "Support index",
+              zlab = "Conductivity index") 
+legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
+       col =levels(as.factor(pal3)) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
+
+
+
+scatter3D(homogenity_index$length,homogenity_index$conductivity,
+          homogenity_index$support, 
+          col.var = as.integer(as.factor(homogenity_index$habit)), 
+          col = pal3, 
+          pch = 4, ticktype = "detailed",
+          colkey = list(at = c(2,3,4,5,6)), side = 1,addlines = TRUE, length = 0.5, width = 0.5,
+          labels = c("mesic","xeric","L-system","L-systemCSX","L-systemCSM"),
+          id=list(method = "mahal", n = length(homogenity_index$habit), 
+                 labels = homogenity_index$habit),
+          phi = 0, bty ="g",
+          main = "Homogenity index", xlab = "Cell length
+          ",
+          ylab ="Conductivity index", zlab = "Support index")
