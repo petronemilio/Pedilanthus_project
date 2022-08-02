@@ -25,4 +25,7 @@ El siguiente arhivo en correr es el de count_transitionswithR.py que hace lo mis
     3) En el script homogeneity_index se generan gráficas de la distribución de longitudes y tablas con las freucencias de tipos celulares.
     4) Se corre el script chaos_representation para hacer el CGM. Este genera un archivo que se llama chaos_representation.csv
     
+######To add cells as a new cell file after codifying a convergence event add:
+sed -Ei 's/\(Converge-\)/&\n/g' 845_edited_cells_NotConverge.txt
+Files with convergence events coded as separate cell lineages were saved in Data/Cell_files_data/ConvergeAssOtherLineage
 
