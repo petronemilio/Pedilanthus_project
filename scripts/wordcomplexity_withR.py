@@ -14,11 +14,11 @@ import csv
 
 #Load all files using os and re
 ##
-path = '../Data/Cell_files_data/'
+path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
 files = os.listdir(path)
 filenames = {} #Create a dictionary to save paths for all data cells
 for i in files:
-    m = re.search(r'.*[^_edited_cells.txt]',i)
+    m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
     filenames[m.group()] = [i]
 
 #Loop to load the files of cells and append them in filenames

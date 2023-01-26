@@ -6,11 +6,11 @@ import pandas as pd
 import os
 import re
 
-path = '../Data/Cell_files_data/'
+path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
 files = os.listdir(path)
 filenames = {}
 for i in files:
-    m = re.search(r'.*[^_edited_cells.txt]',i)
+    m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
     filenames[m.group()] = [i]
 filenames
 
@@ -36,5 +36,5 @@ for k in my_lens:
     mydataframe = mydataframe.append(df, ignore_index=True)
 
 #Write data fram
-mydataframe.to_csv('../Data/cell_lengths.csv')
+mydataframe.to_csv('../Data/cell_lengths_notConverge.csv')
 

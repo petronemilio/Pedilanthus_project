@@ -138,7 +138,20 @@ def estimate_shannon_entropy(file):
  
     return shannon_entropy_value * -1
 
+def estimate_fusiform_to_ray_transitions(string):
+    """This function count the number of times a ray to fusiform
+    transition in the files """
+    R = 0
+    for i in range(0,len(string)):
+        if string[i:i+2] == 'RF':
+            R += 1
+        elif string[i:i+2] == 'RV':
+            R += 1
+        elif string[i:i+2] == 'RP':
+            R += 1
+    return(R)
 
+    
 def estimate_shannon_entropy_window(file):
     m = len(file)
     shannon_entropy_window=[]

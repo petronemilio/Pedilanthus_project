@@ -67,11 +67,11 @@ def support_index(string):
     return(c)
 
 #First define the list of files that have the cell files
-path = '../Data/Cell_files_data/'
+path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
 files = os.listdir(path)
 filenames = {} #Create a dictionary to save paths for all data cells
 for i in files:
-    m = re.search(r'.*[^_edited_cells.txt]',i)
+    m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
     filenames[m.group()] = [i]
 
 #Loop to load the files of cells and append them in filenames

@@ -12,11 +12,11 @@ import itertools
 import csv
 #Load all files using os and re
 ##
-path = '../Data/Cell_files_data/'
+path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
 files = os.listdir(path)
 filenames = {} #Create a dictionary to save paths for all data cells
 for i in files:
-    m = re.search(r'.*[^_edited_cells.txt]',i)
+    m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
     filenames[m.group()] = [i]
 
 #Loop to load the files of cells and append them in filenames
@@ -64,4 +64,34 @@ for k, v in word_diversityR.items():
     # writing the data rows  
         csvwriter.writerows(my_list) 
 
+#######Calc fusiform to ray transitions
+##Create an empty dictionary to save the binary files
+ray_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    ray_code[list(filenames.keys())[i]]=[] #add key element to dict
 
+for k, v in filenames.items():
+    x = 0
+    for z in v[1]:
+        x += wordanalysis.estimate_fusiform_to_ray_transitions(z)
+    ray_code[k].append(x) 
+
+with open('../Data/raytransitions.csv', 'w') as f:
+    for key in ray_code.keys():
+        f.write("%s, %s\n" % (key, ray_code[key]))
+
+##Create an empty dictionary to save the binary files
+ray_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    ray_code[list(filenames.keys())[i]]=[] #add key element to dict
+#
+x = 0
+for k, v in filenames.items():
+    for z in v[1]:
+        while True:
+            for p in range(0,len(z)):
+                if z[p] == 'R':
+                    x += 1
+                    break
+            break
+print('Number of cells lineages with ray cells:',x)   
