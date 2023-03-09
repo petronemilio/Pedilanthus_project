@@ -78,6 +78,12 @@ IDentifier <- wit + geom_point(data = pedilanthus_notcultivated,
 IDentifier
 ggsave("Figures/Whittaker.pdf",IDentifier, device = "pdf")
 all
+dev.off()
+wit_big<-wit + geom_point(data = pedilanthus_notcultivated, 
+                 aes(Temp, Ann.Prec, colour = factor(Especie),shape=factor(Habit)),
+                 alpha=1, size=3)
+
+ggsave("Figures/Whittaker_iawa.pdf",wit_big, device = "pdf")
 ######
 #plot whitaker
 IDentifier <- wit + geom_point(data = pedilanthus_notcultivated, 
@@ -129,10 +135,17 @@ precipitacion <- ggplot()+ geom_sf(data = prec_mex, aes(fill=RANGOS),lwd=0.01)+
   geom_point(data = pedilanthus_notcultivated, 
              aes(Long_dec, Lat_dec,colour=factor(Especie),
                  shape=factor(Habit)))
+
+preci_iawa<-ggplot()+ geom_sf(data = prec_mex, aes(fill=RANGOS),lwd=0.01)+ 
+  scale_fill_manual(values=mycolors) + theme(text = element_text(size=7))+
+  geom_point(data = pedilanthus_notcultivated, 
+             aes(Long_dec, Lat_dec,colour=factor(Especie),
+                 shape=factor(Habit), size=2))
 ####
 ggsave("Figures/Pedilanthus_altitude.pdf",altitud, width = 20,height = 20,units = "cm")
 ggsave("Figures/Pedilanthus_temperature.pdf",temperatura, width = 20,height = 20,units = "cm")
 ggsave("Figures/Pedilanthus_precipitation.pdf",precipitacion, width = 20,height = 20,units = "cm")
+ggsave("Figures/Pedilanthus_precipitation_iawa.pdf",preci_iawa, width = 20,height = 20,units = "cm")
 
 ##########PCA #########
 complete.cases(pedilanthus_notcultivated)
@@ -223,7 +236,68 @@ points(log10(pedilanthus_samples$xylempith.ratio[pedilanthus_samples$Habit=="Mes
        col="blue")
 boxplot(pedilanthus_samples$xylempith.ratio ~ pedilanthus_samples$Habit)
 pedilanthus_samples$stemdiametertotal-pedilanthus_samples$pithdiameter
+pedilanthus_samples$xylemdiameter <- pedilanthus_samples$stemdiameter.xylem - pedilanthus_samples$pithdiameter
+pedilanthus_samples$xylemfraction <- (pedilanthus_samples$xylemdiameter/
+                                        (pedilanthus_samples$stemdiameter.xylem+pedilanthus_samples$pithdiameter))*100
+pedilanthus_samples$pithfraction <- (pedilanthus_samples$pithdiameter/
+                                        (pedilanthus_samples$stemdiameter.xylem+pedilanthus_samples$pithdiameter))*100
+boxplot(pedilanthus_samples$xylemfraction~pedilanthus_samples$Habit)
+boxplot(pedilanthus_samples$pithfraction~pedilanthus_samples$Habit)
+
+boxplot(pedilanthus_samples$xylemfraction ~pedilanthus_samples$Species)
+#
+numbercells$Sample <-gsub("_edited_cells_NotConverge.txt","",as.character(numbercells$Group.1))
+numbercells$Sample[27] <-gsub("_S2-1","",numbercells$Sample[27])
+matcher<-match(pedilanthus_samples$Sample,numbercells$Sample)
+pedilanthus_samples$celllength <- numbercells$x[matcher]
+#
+lm.celllengthxy <- lm(log10(pedilanthus_samples$celllength)~ log10(pedilanthus_samples$stemdiameter.xylem))
+summary(lm.celllengthxy)
+
+png("Figures/CellLengthStemXylemDiameter.png")
+plot(log10(pedilanthus_samples$celllength)~ log10(pedilanthus_samples$stemdiameter.xylem),
+     xlab="Stem xylem diameter (cm)", ylab="Mean lineage cell length")
+points(log10(pedilanthus_samples$celllength[pedilanthus_samples$Habit=="Mesic"]) ~
+         log10(pedilanthus_samples$stemdiameter.xylem[pedilanthus_samples$Habit=="Mesic"]),
+       col="blue", pch=19)
+points(log10(pedilanthus_samples$celllength[pedilanthus_samples$Habit=="Xeric"]) ~
+         log10(pedilanthus_samples$stemdiameter.xylem[pedilanthus_samples$Habit=="Xeric"]),
+       col="red", pch =19)
+abline(lm.celllengthxy)
+dev.off()
+
+lm.celllengthsd <- lm(log10(pedilanthus_samples$celllength)~ log10(pedilanthus_samples$stemdiametertotal))
+summary(lm.celllengthsd)
+png("Figures/CellLengthStemDiameter.png")
+plot(log10(pedilanthus_samples$celllength)~ log10(pedilanthus_samples$stemdiametertotal),
+     xlab="Stem total diameter (cm)", ylab="Mean lineage cell length")
+points(log10(pedilanthus_samples$celllength[pedilanthus_samples$Habit=="Mesic"]) ~
+       log10(pedilanthus_samples$stemdiametertotal[pedilanthus_samples$Habit=="Mesic"]),
+       col="blue", pch=19)
+points(log10(pedilanthus_samples$celllength[pedilanthus_samples$Habit=="Xeric"]) ~
+        log10(pedilanthus_samples$stemdiametertotal[pedilanthus_samples$Habit=="Xeric"]),
+       col="red", pch=19)
+abline(lm.celllengthsd)
+dev.off()
+
+png("Figures/CellLengthPithDiameter.png")
+plot(log10(pedilanthus_samples$celllength) ~ log10(pedilanthus_samples$pithdiameter),
+     xlab="Pith diameter (cm)", ylab="Mean lineage cell length")
+points(log10(pedilanthus_samples$celllength[pedilanthus_samples$Habit=="Mesic"]) ~
+       log10(pedilanthus_samples$pithdiameter[pedilanthus_samples$Habit=="Mesic"]),
+       col="blue", pch=19)
+points(log10(pedilanthus_samples$celllength[pedilanthus_samples$Habit=="Xeric"]) ~
+       log10(pedilanthus_samples$pithdiameter[pedilanthus_samples$Habit=="Xeric"]),
+       col="red",pch=19)
+dev.off()
+####
+
+
+plot(log10(pedilanthus_samples$celllength) ~ log10(pedilanthus_samples$stemdiameter.xylem))
+plot(log10(pedilanthus_samples$celllength) ~ log10(pedilanthus_samples$stemdiametertotal))
+
 ####
 plot(log10(pedilanthus_samples$stemdiameter.xylem)~ log10(pedilanthus_samples$Height.cm.))
 plot(log10(pedilanthus_samples$pithdiameter)~ log10(pedilanthus_samples$Height.cm.))
 pedilanthus_samples$stemdiameter.xylem - pedilanthus_samples$pithdiameter
+

@@ -37,4 +37,28 @@ for k in my_lens:
 
 #Write data fram
 mydataframe.to_csv('../Data/cell_lengths_notConverge.csv')
+####Do it for cell lineages without R####
+my_lens = {}
+for values in filenames.values(): 
+    values.append([])
+    for i in range(0,len(values[1])):
+        x = values[1][i].replace('R','')
+        if x == '':
+            pass
+        else:
+            values[2].append(x)
+    my_lens[values[0]]=[]
+    for s in values[2]:
+        my_lens[values[0]].append(len(s))
+        for z in s:
+            my_vocabulary.add(z)            
+mydataframe = pd.DataFrame()
+for k in my_lens:
+    df = pd.DataFrame()
+    df = pd.DataFrame(my_lens[k], columns =['Number of cells'])
+    df.insert(0, 'Sample', np.repeat(k, np.shape(df)[0]), True)
+    mydataframe = mydataframe.append(df, ignore_index=True)
+
+#Write data fram
+mydataframe.to_csv('../Data/cell_lengths_withoutR.csv')
 

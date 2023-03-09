@@ -79,6 +79,23 @@ def get_all_words(array, n):
         #aquí debería de venir una forma de agregar cada 
         #diccionario de x a words
     return(words)
+    
+def get_all_words_more_than_one(array, n):
+    """Determine the number of different words in 
+    a given array. It uses the get_words function
+    It also need a k-number for the length of words"""
+    #Create empty set to add the different words
+    words = {}
+    #iterate trhough the files:
+    for i in array:
+        x = get_words(i, n) 
+        for keys,values in x.items():
+            words[keys] = words.get(keys,0)
+            words[keys] = words[keys] + values 
+        #aquí debería de venir una forma de agregar cada 
+        #diccionario de x a words
+    words = {key:val for key, val in words.items() if val != 1}
+    return(words)
 #Se cambió la función..... en lugar..
 #Parece que las dos funciones funcionan.#Utilizarlas con los datos
 

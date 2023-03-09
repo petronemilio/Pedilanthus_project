@@ -44,7 +44,7 @@ for values in filenames.values():
 
 #################  Create a dictionary to save the word counting #########
 word_diversity = {} #Empty dictionary to add values into
-for i in range(1,21):
+for i in range(1,35):
     word_diversity[i]={}
     for values in filenames.values(): 
         word_diversity[i][values[0]] = wordanalysis.get_all_words(values[2], i)
@@ -53,10 +53,18 @@ for i in range(1,21):
 val = 1
 for x in word_diversity.values():
     wordcount = pd.DataFrame.from_dict(x, orient='index')
-    wordcount.to_csv('../Data/wordcounts'+ str(val)+'.csv', index = True)    
+    wordcount.to_csv('../Data/word_counts_all/wordcounts'+ str(val)+'.csv', index = True)    
     val += 1
-
-################################# Calc Euclidean distance   #################
+####Write the total number of words at each length for samples:
+##Word counts/features
+word_features = []
+for y in word_diversity.values():
+    for a,b in y.items():
+        word_features.append([a,len(b)])
+#Convert the list into dataframe
+data = pd.DataFrame(word_features, columns=['file','NumberOfWords'])
+data.to_csv('../Data/word_counts_all/wordcounts_all.csv')
+################################## Calc Euclidean distance   #################
 euc_list = {}
 for k, v in word_diversity.items():
     header = ["File1","File2", "Euc_dist"]
@@ -65,7 +73,7 @@ for k, v in word_diversity.items():
     for k1, k2 in itertools.combinations(v, 2):
         my_list.append([k1,k2, wordanalysis.euc_dist(v[k1], v[k2])])
     euc_list[k]=my_list
-    f = "../Data/euclidean_distance"+str(k)+'.csv'
+    f = "../Data/euclidean_distance_all/euclidean_distance"+str(k)+'.csv'
     # writing to csv file  
     with open(f, 'w') as csvfile:  
     # creating a csv writer object  
@@ -74,5 +82,49 @@ for k, v in word_diversity.items():
         csvwriter.writerow(header)  
     # writing the data rows  
         csvwriter.writerows(my_list) 
+
+####Repeat but counting only words that appear more than once: #############
+#
+word_diversity = {} #Empty dictionary to add values into
+for i in range(1,35):
+    word_diversity[i]={}
+    for values in filenames.values(): 
+        word_diversity[i][values[0]] = wordanalysis.get_all_words_more_than_one(values[2], i)
+
+###Write matrix output from df
+val = 1
+for x in word_diversity.values():
+    wordcount = pd.DataFrame.from_dict(x, orient='index')
+    wordcount.to_csv('../Data/word_counts_morethanone/wordcounts'+ str(val)+'.csv', index = True)    
+    val += 1
+####Write the total number of words at each length for samples:
+##Word counts/features
+word_features = []
+for y in word_diversity.values():
+    for a,b in y.items():
+        word_features.append([a,len(b)])
+#Convert the list into dataframe
+data = pd.DataFrame(word_features, columns=['file','NumberOfWords'])
+data.to_csv('../Data/word_counts_morethanone/wordcounts_all.csv')
+
+#Repeat euclidean distances for word counts with more than one:
+euc_list = {}
+for k, v in word_diversity.items():
+    header = ["File1","File2", "Euc_dist"]
+    euc_list[k]={}
+    my_list=[]
+    for k1, k2 in itertools.combinations(v, 2):
+        my_list.append([k1,k2, wordanalysis.euc_dist(v[k1], v[k2])])
+    euc_list[k]=my_list
+    f = "../Data/euclidean_distance_morethanone/euclidean_distance"+str(k)+'.csv'
+    # writing to csv file  
+    with open(f, 'w') as csvfile:  
+    # creating a csv writer object  
+        csvwriter = csv.writer(csvfile)      
+    # writing the fields  
+        csvwriter.writerow(header)  
+    # writing the data rows  
+        csvwriter.writerows(my_list) 
+
 
 

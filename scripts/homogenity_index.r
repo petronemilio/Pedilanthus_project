@@ -9,6 +9,7 @@ library(plot3D)
 library(scatterplot3d)
 library(data.table)
 library(fitdistrplus)
+library(stringr)
 ##sET WORKING DIRECTORY
 getwd()
 ###
@@ -20,8 +21,8 @@ pal3 <- wes_palette("Darjeeling1")
 pal4 <- wes_palette("FantasticFox1")
 my_palette <- c(pal1,pal2,pal3,pal4)
 ############################################
-#Graficar la distribución de las longitudes de las series.
-cell_lengths <- read.csv("Data/cell_lengths.csv")
+#Graficar la distribución de las longitudes de las series. Including rays
+cell_lengths <- read.csv("Data/cell_lengths_notConverge.csv")
 files <- levels(as.factor(cell_lengths$Sample))
 species<- c("E. peritropoides","E. peritropoides","E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
             "E. coalcomanensis","E. calcarata","E. calcarata","E. finkii","E. calcarata","E. tithymaloides",
@@ -36,12 +37,23 @@ habit <- c("mesic","mesic","xeric","xeric","mesic","mesic",
            "xeric","xeric","xeric","xeric","xeric",
            "xeric","probL-system","probetaL-system","RayL-system")
 species.id <- as.data.frame(cbind(files,species,habit))
-write.csv(species.id,"meta/speciesID.csv")
+insert <- "_NotConverge"
+#species.id$filesconverge <- sub("(?<=\\w)(?=\\.)", insert, species.id$files, perl=TRUE)
+#write.csv(species.id,"meta/speciesID.csv")
 #####
 match.id <- match(cell_lengths$Sample,species.id$files)
 cell_lengths$species <- as.character(species.id$species[match.id])
 #
 cell_lengths$habit <- as.character(species.id$habit[match.id])
+agg <- aggregate(Number.of.cells ~ species, cell_lengths, function(x){
+  qq <- quantile(x, probs = c(1, 3)/4)
+  iqr <- diff(qq)
+  lo <- qq[1] - 1.5*iqr
+  hi <- qq[2] + 1.5*iqr
+  c(Mean = mean(x), IQR = unname(iqr), lower = lo, high = hi)
+}) 
+agg
+summaris
 #####
 p  <- ggplot(cell_lengths, aes(Number.of.cells, colour=species, fill=species))
 p  <- p + geom_density(alpha=0.2)
@@ -84,8 +96,9 @@ boxplot(cell_lengths$Number.of.cells~cell_lengths$habit,
 ##
 summary(cell_lengths$Number.of.cells)
 cellfilemean<-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$species), FUN=mean)
-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$Sample), FUN=mean)
-numbercells<-cell_lengths %>% group_by(Sample) %>% tally()
+cellfilemean[with(cellfilemean, order(x)),]
+
+numbercells<-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$Sample), FUN=mean)
 ##
 hist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"])
 hist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"])
@@ -208,7 +221,7 @@ numberofcells <- table(cell_lengths$Sample)
 rownames(numberofcells)
 match.id <- match(tipos_celulares$Sample,rownames(numberofcells))
 tipos_celulares$numberofFiles <- as.character(numberofcells[match.id])
-write.table(tipos_celulares, "Data/cell_Lengths_Celltypes.csv")
+write.table(tipos_celulares, "Data/cell_Lengths_Celltypes.csv", row.names = FALSE)
 #Obtain total of cells codified without the L-systems
 tipos_celulares_withoutLS <-subset(tipos_celulares, tipos_celulares$Sample!="contextmesicLsystem_edited_cells.txt"&
          tipos_celulares$Sample != "contextxericLsystem_edited_cells.txt" & 
@@ -409,8 +422,25 @@ points(homogenity_index$conductivity[homogenity_index$habit=="xeric"] ~
 homogenity_index_subset <- subset(homogenity_index,homogenity_index$sp != "L-systemXeric" & 
          homogenity_index$sp != "L-systemMesic" & homogenity_index$sp != "RayL-system" &
            homogenity_index$sp != "probL-system")
+
+table(homogenity_index_subset$conductivity> 0.0)
+homogenity_index_justpedilanthus <- subset(homogenity_index_subset, 
+                                           homogenity_index_subset$sp !="probetaL-system")
+table(homogenity_index_justpedilanthus$conductivity> 0.0)
+temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$conductivity == 1)
+table(temporal$conductivityfreq==0)
+temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$conductivity > 0.5 &
+                 homogenity_index_justpedilanthus$conductivity < 0.85)
+table(homogenity_index_justpedilanthus$support <1)
+table(temporal$habit=="mesic")
+temporal<-subset(temporal,temporal$habit=="mesic")
+table(temporal$support < 0)
+temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$conductivity < 0.4)
+table(temporal$habit=="xeric")
+temporal<-subset(temporal,temporal$habit=="xeric")
+table(temporal$support>0)
 #
-pal4 <-paleta[as.numeric(as.factor(homogenity_index_subset$habit))]
+pal4 <-my_palette[as.numeric(as.factor(homogenity_index_subset$habit))]
 pdf("Figures/morphospace_length.pdf")
 scatterplot3d(homogenity_index_subset$length,homogenity_index_subset$conductivity,
               homogenity_index_subset$support,
@@ -418,7 +448,7 @@ scatterplot3d(homogenity_index_subset$length,homogenity_index_subset$conductivit
               main="3D Scatter Plot",xlab = "Cell length",ylab = "Support index",
               zlab = "Conductivity index") 
 legend("bottom", legend = levels(as.factor(homogenity_index_subset$habit)),
-       col =c("#d39e47","#b05ac8","#56b348") , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
+       col =c("#273046", "#CB2314", "#FAD510") , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
 dev.off()
 scatterplot3d(homogenity_index$support,homogenity_index$conductivity,
               homogenity_index$length,
@@ -427,9 +457,7 @@ scatterplot3d(homogenity_index$support,homogenity_index$conductivity,
               zlab = "Conductivity index") 
 legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
        col =levels(as.factor(pal3)) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
-
-
-
+#
 scatter3D(homogenity_index$length,homogenity_index$conductivity,
           homogenity_index$support, 
           col.var = as.integer(as.factor(homogenity_index$habit)), 
@@ -443,3 +471,4 @@ scatter3D(homogenity_index$length,homogenity_index$conductivity,
           main = "Homogenity index", xlab = "Cell length
           ",
           ylab ="Conductivity index", zlab = "Support index")
+#####Load file with info about cell lengthHIco

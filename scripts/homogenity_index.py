@@ -22,9 +22,11 @@ def conduc_index(string):
     c = ''
     string += ' '
     for z in range(0,len(string)):
-        if string[z] == 'F':    
-            c += '0'
-        elif string[z] == 'V':
+        if string[z] == 'V':
+            c += '1'    
+        elif string[z] == 'F' and string[z+1] == 'V':    
+            c += '1'
+        elif string[z] == 'F' and string[z-1] == 'V':    
             c += '1'    
         elif string[z] == 'P' and string[z+1] == 'V':
             c += '1'
@@ -58,12 +60,16 @@ def support_index(string):
     c = ''
     string += ' '
     for z in range(0,len(string)):
-        if string[z] == 'F':    
-            c += '1'
-        elif string[z] == 'V':
-            c += '0'    
+        if string[z] == 'V':
+            c += '0'
         elif string[z] == 'P':
             c += '0'
+        elif string[z] == 'F' and string[z-1] == 'V':    
+            c += '0'
+        elif string[z] == 'F' and string[z+1] == 'V':    
+            c += '0'
+        elif string[z] == 'F':    
+            c += '1'     
     return(c)
 
 #First define the list of files that have the cell files
@@ -151,6 +157,15 @@ def homogenity_index(string):
     elif 0 not in {n0,n1}:
         d=((n00*n11)-(n10*n01))/(n0*n1)    
     return(d)
+##
+def percentage01(string):  
+    if string.count('0') == 0:
+        return(1)
+    elif string.count('1') == 0:
+        return(0)
+    else:
+        ones = (string.count('1')/len(string))
+        return(ones)
 
 conductivity_index = {} #Empty dictionary to add values into
 
@@ -189,7 +204,23 @@ for keys, values in filenames.items():
     my_lens[values[0]]=[]
     for s in values[1]:
         my_lens[values[0]].append(len(s))
-
+#Create dict with values of percentage of 1's
+conductivity_freq = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    conductivity_freq[list(filenames.keys())[i]]=[] 
+for k, v in conductivity_code.items():
+    prueba_list=[]
+    for z in v:
+         conductivity_freq[k].append(percentage01(z)) 
+#For support
+support_freq = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    support_freq[list(filenames.keys())[i]]=[] 
+for k, v in support_code.items():
+    prueba_list=[]
+    for z in v:
+         support_freq[k].append(percentage01(z)) 
+                  
 #####Create a pandas data frame
 df = pd.DataFrame(columns=['sp'])
 for k,v in storage_index.items():
@@ -219,6 +250,18 @@ for k,v in my_lens.items():
     for i in range(0,len(v)):
         indexall.append(v[i])
 df["length"]= indexall
+
+indexall=[]
+for k,v in conductivity_freq.items():    
+    for i in range(0,len(v)):
+        indexall.append(v[i])
+df["conductivityfreq"]= indexall    
+indexall=[]
+
+for k,v in support_freq.items():    
+    for i in range(0,len(v)):
+        indexall.append(v[i])
+df["supportfreq"]= indexall    
 
 df.to_csv('../Data/homogentiy_index.csv')
 
