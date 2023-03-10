@@ -1,0 +1,383 @@
+##### Distance measures #####
+# In this script, plots and tables are made
+# to analize different measures of word diversity
+# and complexity
+pal1<-c("#a5c533", "#9658d8", "#59d261", "#9c3db2", "#75bb38", "#5f77f3", "#bebe35", "#3659cb",
+                 "#40af43", "#ca37a3", "#39c477", "#ee68d2", "#4f901e", "#cf6fe4", "#8fa837", "#8163d6",
+                 "#e6ac35", "#614bae", "#7dbe68", "#a33791", "#4dc38d", "#d32f80", "#49852d", "#ac84e6",
+                 "#bca53a", "#507fe3", "#e47f2e", "#4a9de3", "#e55632", "#3ec7da", "#b82e25", "#59ceb8",
+                 "#de3953", "#308949", "#e861ac", "#3d733d", "#ea93e1", "#606b16", "#82479d", "#90be7e",
+                 "#6b4fa0", "#cb8e35", "#345fa9", "#b3511f", "#58b8e3", "#c33361", "#54a27a", "#eb658b",
+                 "#287e63", "#c972bd", "#7c9451", "#5259a9", "#928432", "#8897ec", "#7e5f16", "#8775be",
+                 "#bcb66e", "#a15195", "#1a6447", "#b04a79", "#33a29e", "#c24f4e", "#2e73a9", "#eb8665",
+                 "#5e99c8", "#af6938", "#788acb", "#8e4b27", "#c0a8e8", "#5b672f", "#775696", "#d69e6c",
+                 "#576196", "#8f6f3d", "#b17db7", "#9e4d51", "#e18db3", "#92465f", "#dc8484", "#8b4c76")
+##### Load useful libraries #####
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(corrplot)
+library(gplots)
+library(wesanderson)
+library(pheatmap)
+##### Load files
+## Loading species id file
+species.id <- read.csv("meta/speciesID.csv")
+insert <- "_NotConverge"
+species.id$filesconverge <- sub("(?<=\\w)(?=\\.)", insert, species.id$files, perl=TRUE)
+
+##Maybe include radial files
+##### Load files of lempelziv measurments #####
+lempel.by.cell <- read.csv("Data/lemplzivbyfile.csv", row.names=1)
+#See a exploratory boxplot
+boxplot(lempel.by.cell$Value ~ lempel.by.cell$Name)
+###Add species identifiers to files
+match.id <- match(lempel.by.cell$Name,species.id$files)
+lempel.by.cell$species <- as.character(species.id$species[match.id])
+match.id <- match(lempel.by.cell$Name,species.id$files)
+lempel.by.cell$habit <- as.character(species.id$habit[match.id])
+###boxplot with species
+boxplot(lempel.by.cell$Value ~ lempel.by.cell$species)
+#Remove Lsystems:
+lempel.by.cell <- subset(lempel.by.cell, lempel.by.cell$Name != "contextmesicLsystem_edited_cells_NotConverge.txt" &
+                           lempel.by.cell$Name != "contextxericLsystem_edited_cells_NotConverge.txt" &
+                           lempel.by.cell$Name != "Ray_Lsystem_edited_cells_NotConverge.txt")
+hist(lempel.by.cell$Value)
+hist(log10(lempel.by.cell$Value))
+#
+lempel.aov <- aov(log10(lempel.by.cell$Value)~ lempel.by.cell$habit)#Factor is habit
+lempel.species.aov <- aov(log10(lempel.by.cell$Value)~ lempel.by.cell$species)#factor is sp.
+summary(lempel.aov) #habit
+plot(lempel.aov)
+TukeyHSD(lempel.aov)
+summary(lempel.species.aov)
+plot(lempel.species.aov)
+lempel.species.tukey <- TukeyHSD(lempel.species.aov)
+plot(lempel.species.tukey, las = 1)
+#Make palete
+colores<- c("#71982d","#7464d7","#5aba46","#d369d3","#44be7a","#a2409a","#b8b436","#696fba",
+                     "#d68937","#5f9ed7","#c94c34","#3fc1bf","#da477c","#67b88c","#a14761","#91b869",
+                     "#c987c4","#4a772f","#dc8279","#327e58","#c2a864","#846a2b","#71982d")
+                     
+pdf("Figures/lempelzivFile.pdf") # Para guardar en PDF
+boxplot(lempel.by.cell$Value ~ lempel.by.cell$Name, col=colores,
+        las=1.5, xlab="Cell-file Lempel-Ziv algorithm",ylab = "Score", cex=0.4,
+        cex.names=0.5, cex.axis = 0.3, cex.lab=1.2)
+dev.off()
+pdf("Figures/lempelzivsp.pdf")
+boxplot(lempel.by.cell$Value ~ lempel.by.cell$species, col=colores,
+        las=1.5, xlab = "Cell-file Lempel-Ziv algorithm",ylab = "Score", cex=0.4,
+        cex.names=0.5, cex.axis=0.6, cex.lab=1.2)
+dev.off()
+pdf("Figures/lempelzivhabit.pdf")
+boxplot(lempel.by.cell$Value ~ lempel.by.cell$habit, 
+        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+        xlab = "Cell-file Lempel-Ziv algorithm")
+dev.off()
+pdf("Figures/lempelzivhabit_log10.pdf")
+boxplot((log10(lempel.by.cell$Value)) ~ lempel.by.cell$habit, 
+        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+        xlab = "Cell-file Lempel-Ziv algorithm")
+dev.off()
+#
+#lempel.cellhabit.lm <-lm(lempel.by.cell$Value~lempel.by.cell$habit)
+#summary(lempel.cellhabit.lm)
+#plot(lempel.cellhabit.lm)
+library(emmeans)
+library(multcompView)
+emm1 <- emmeans(lempel.species.aov, specs = pairwise ~ species,adjust="tukey")
+emm1$contrasts
+multcomp::cld(emm1$emmeans, alpha = 0.10, Letters=LETTERS)
+#
+#lempel.cellsp.lm <-lm(lempel.by.cell$Value~lempel.by.cell$species)
+#summary(lempel.cellsp.lm)
+##
+emm.habit.lempel <- emmeans(lempel.aov, specs = pairwise ~ habit, adjust="tukey")
+emm.habit.lempel$contrasts
+multcomp::cld(emm.habit.lempel$emmeans, alpha = 0.10, Letters=LETTERS)
+#
+pdf("Figures/lempelzivsp_reduced.pdf")
+boxplot(lempel.by.cell$Value ~ lempel.by.cell$species,
+        col=c("#273046", "#FAD510","#FAD510","#FAD510","#FAD510","#273046","#273046","#273046",
+                       "#FAD510","#273046","#FAD510","#273046","#273046","#273046","#CB2314","#CB2314"),
+                       las=1.5, xlab = "Cell-file Lempel-Ziv algorithm",ylab = "Score", cex=0.4,
+        cex.names=0.5, cex.axis=0.6, cex.lab=1.2)
+dev.off()
+pdf("Figures/lempelzivsp_reduced_log.pdf")
+boxplot(log10(lempel.by.cell$Value) ~ lempel.by.cell$species,
+        col=c("#273046", "#FAD510","#FAD510","#FAD510","#FAD510","#273046","#273046","#273046",
+                       "#FAD510","#273046","#FAD510","#273046","#273046","#273046","#CB2314","#CB2314"),
+                       las=1.5, xlab = "Cell-file Lempel-Ziv algorithm",ylab = "Score", cex=0.4,
+        cex.names=0.5, cex.axis=0.6, cex.lab=1.2)
+dev.off()
+
+ggplot(lempel.by.cell, aes(x = Name, y = Value, color = species)) + geom_boxplot()
+ggplot(lempel.by.cell, aes(x = species, y = Value, color = species)) + geom_boxplot()
+#
+#Now plot distribution of compression
+bract<-subset(lempel.by.cell, lempel.by.cell$species == "E. bracteata") 
+#Make loop to plot each file
+plot(lempel.by.cell$Value[lempel.by.cell$species=="E. tithymaloides"], type ="l")
+#####Make palete 
+pal1 <- wes_palette("BottleRocket2")
+pal2 <- wes_palette("Rushmore1")
+pal3 <- wes_palette("Darjeeling1")
+pal4 <- wes_palette("FantasticFox1")
+pal5 <- wes_palette("IsleofDogs1")
+pal6 <- wes_palette("Cavalcanti1")
+my_palette <- c(pal1,pal2,pal3,pal4,pal5,pal6)
+#
+pdf("Figures/lempelzivbyfile.pdf")
+par(mfrow = c(2,1))
+z=1
+for(i in files) {
+  temp <- subset(lempel.by.cell, lempel.by.cell$Name == i)
+  plot(temp$Value, type ="l", xlab = "Cell file position", ylab="Lempel-ziv value",
+       main= i, col= my_palette[z])
+  z = z +1
+}
+dev.off()
+##
+plot(lempel.by.cell$Value[lempel.by.cell$species=="probL-system"], type ="b", xlab="Compression distance",
+                               col=my_palette[1], lwd=2)
+plot(lempel.by.cell$Value[lempel.by.cell$species=="probetaL-system"], type ="b", xlab="Compression distance",
+                               col=my_palette[1], lwd=2)
+#
+z=1
+for(i in files) {
+   plot(lempel.by.cell$Value[lempel.by.cell$Name==i], type ="b", xlab="Compression distance",
+        col=my_palette[1], lwd=2,  main= i)
+   lines(lempel.by.cell$Value[lempel.by.cell$Name=="probLsystem_edited_cells.txt"], type ="b", xlab="Compression distance",
+         col = my_palette[z], lwd = 2)
+   z=z+1
+}
+##
+pdf("Figures/lempelziv_bycell.pdf")
+plot(lempel.by.cell$Value[lempel.by.cell$Name=="974_edited_cells.txt"], type ="b", xlab="Compression distance",
+     col=my_palette[1], lwd=2,  main= "Lempel-ziv")
+lines(lempel.by.cell$Value[lempel.by.cell$Name=="probLsystem_edited_cells.txt"], type ="b", xlab="Compression distance",
+      col = my_palette[2], lwd = 2)
+lines(lempel.by.cell$Value[lempel.by.cell$Name=="EPM10_edited_cells.txt"], type ="b", xlab="Compression distance",
+      col = my_palette[3], lwd = 2)
+legend("bottom", legend = c("E. peritropoides","L-system","E. diazlunana"),
+       col =levels(as.factor(my_palette[1:3])) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
+dev.off()
+#
+par(mfrow = c(2,1))
+plot(lempel.by.cell$Value[lempel.by.cell$species=="probL-system"], type ="l", xlab="Compression distance")
+plot(lempel.by.cell$Value[lempel.by.cell$Name=="EPM5_edited_cells.txt"], type ="l", xlab="Compression distance")
+dev.off()
+#
+lempel.by.cell <- transform(lempel.by.cell, Sequence=ave(seq_along(Name), Name, FUN=seq_along))
+ggplot(lempel.by.cell, aes(x = Sequence,y = Value,color = species)) +
+  geom_line()
+#Add identifier of habit
+ggplot(lempel.by.cell, aes(x = Sequence,y = Value,color = habit)) +
+  geom_line()
+
+################################################
+################# Shannon entropy #######################################################
+########################################################
+shannonentropy.by.cell <- read.csv("Data/shannonentropy.csv", row.names=1)
+#Add species and habit
+match.id <- match(shannonentropy.by.cell$Name,species.id$files)
+shannonentropy.by.cell$species <- as.character(species.id$species[match.id])
+shannonentropy.by.cell$habit <- as.character(species.id$habit[match.id])
+#
+pdf("Figures/shannonbyfile.pdf") # Para guardar en PDF
+boxplot(shannonentropy.by.cell$Value ~ shannonentropy.by.cell$Name, col=colores,
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
+        cex.names=0.5, cex.axis=0.3, cex.lab=1.2)
+dev.off()
+pdf("Figures/shanonbysp.pdf")
+boxplot(shannonentropy.by.cell$Value ~ shannonentropy.by.cell$species, col=colores,
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
+        names=c( expression(italic("E. bracteata")),expression(italic("E. calcarata")) ,
+                 expression(italic("E. coalcomanensis")),expression(italic("E. colligata")),
+                 expression(italic("E. conzattii")),expression(italic("E. cymbifera")),
+                 expression(italic("E. cyri")), expression(italic("E. diazlunana")),
+                 expression(italic("E. finkii")),expression(italic("E. lomelli")),
+                 expression(italic("E. peritropoides")),  expression(italic("E. personata")),
+                 expression(italic("E. tehuacana")),expression(italic("E. tithymaloides")),
+                 expression("L-systemM"),expression("L-systemX"), expression("probBetaLsystem"),
+                 expression("probL-system"),expression("RayL-system")),
+        cex.names=0.5, cex.axis=0.8, cex.lab=1.2)
+dev.off()
+#
+pdf("Figures/entropybyfile.pdf")
+par(mfrow = c(2,1))
+z=1
+for(i in files) {
+  temp <- subset(shannonentropy.by.cell, shannonentropy.by.cell$Name == i)
+  plot(temp$Value, type ="l", xlab = "Cell file position", ylab="Shannon-Entropy value",
+       main= i, col= my_palette[z], lwd = 2)
+  z = z +1
+}
+dev.off()
+######
+#Small subset
+shannon_subset<-subset(shannonentropy.by.cell, Name == "probLsystem_edited_cells.txt" | Name=="974_edited_cells.txt" |
+                         Name == "EPM10_edited_cells.txt")
+shannon_subset <- transform(shannon_subset, Sequence=ave(seq_along(species),
+                                                         species, FUN=seq_along))
+#Shannon
+pdf("Figures/shannon_bycell.pdf")
+ggplot(shannon_subset, aes(x = Sequence,y = Value,color = species)) +
+  geom_line()
+dev.off()
+#########Remove rlsystem, and context sensitive lsystems
+shannonentropy.by.cell_subset <-subset(shannonentropy.by.cell, shannonentropy.by.cell$Name != "contextmesicLsystem_edited_cells_NotConverge.txt" &
+                                         shannonentropy.by.cell$Name != "contextxericLsystem_edited_cells_NotConverge.txt" &
+                                         shannonentropy.by.cell$Name != "Ray_Lsystem_edited_cells_NotConverge.txt" )
+#
+hist(shannonentropy.by.cell_subset$Value)
+shannon_morethanzerolessonefive <- subset(shannonentropy.by.cell_subset, shannonentropy.by.cell_subset$Value > 0.1 & 
+                                            shannonentropy.by.cell_subset$Value < 1.5)
+hist(shannon_morethanzerolessonefive$Value)
+shannon.cellsp.aov <- aov(shannonentropy.by.cell_subset$Value ~
+                            factor(shannonentropy.by.cell_subset$species))
+plot(shannon.cellsp.aov)
+shannon.cellsp.filtered.aov <- aov(shannon_morethanzerolessonefive$Value ~
+                                     shannon_morethanzerolessonefive$species)
+plot(shannon.cellsp.filtered.aov)
+shannon.cellsp.filtered.aov
+shannon.cellsp.kruskal <- kruskal.test(shannonentropy.by.cell_subset$Value ~
+                                                  shannonentropy.by.cell_subset$species)
+shannon.cellhabit.kruskal <- kruskal.test(shannonentropy.by.cell_subset$Value ~
+                                                     shannonentropy.by.cell_subset$habit)
+#Check if dunn test should follow.
+#########################################
+emm.shannon <- emmeans(shannon.cellsp.aov, specs = pairwise ~ species,adjust="tukey")
+emm.shannon$contrasts
+multcomp::cld(emm.shannon$emmeans, alpha = 0.10, Letters=LETTERS)
+emm.shannon.kruskal <- emmeans(shannon.cellsp.kruskal, specs = pairwise ~ species)
+emm.shannon.filt$contrasts
+multcomp::cld(emm.shannon.filt$emmeans, alpha = 0.10, Letters=LETTERS)
+??dunnTest
+#
+pdf("Figures/shanonbysp_subset.pdf")
+boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$species,
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
+        names=c( expression(italic("E. bracteata")),expression(italic("E. calcarata")) ,
+                 expression(italic("E. coalcomanensis")),expression(italic("E. colligata")),
+                 expression(italic("E. conzattii")),expression(italic("E. cymbifera")),
+                 expression(italic("E. cyri")), expression(italic("E. diazlunana")),
+                 expression(italic("E. finkii")),expression(italic("E. lomelli")),
+                 expression(italic("E. peritropoides")),  expression(italic("E. personata")),
+                 expression(italic("E. tehuacana")),expression(italic("E. tithymaloides")),
+                 expression("probBetaLsystem"),expression("probL-system")),
+        cex.names=0.5, cex.axis=0.8, cex.lab=1.2)
+dev.off()
+
+#                
+pdf("Figures/shanonbysp_subset_filtered.pdf")
+boxplot(shannon_morethanzerolessonefive$Value ~ shannon_morethanzerolessonefive$species,
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
+        col=c("#273046", "#FAD510","#FAD510","#FAD510","#FAD510","#273046","#273046","#273046",
+                       "#FAD510","#273046","#FAD510","#273046","#273046","#273046","#CB2314","#CB2314"),
+                       names=c( expression(italic("E. bracteata")),expression(italic("E. calcarata")) ,
+                                expression(italic("E. coalcomanensis")),expression(italic("E. colligata")),
+                                expression(italic("E. conzattii")),expression(italic("E. cymbifera")),
+                                expression(italic("E. cyri")), expression(italic("E. diazlunana")),
+                                expression(italic("E. finkii")),expression(italic("E. lomelli")),
+                                expression(italic("E. peritropoides")),  expression(italic("E. personata")),
+                                expression(italic("E. tehuacana")),expression(italic("E. tithymaloides")),
+                                expression("probBetaLsystem"),expression("probL-system")),
+        cex.names=0.5, cex.axis=0.8, cex.lab=1.2)
+dev.off()
+#by category
+pdf("Figures/shanonbyhabit.pdf") # Para guardar en PDF
+boxplot(shannon_morethanzerolessonefive$Value ~ shannon_morethanzerolessonefive$habit,
+        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
+dev.off()    
+boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$habit,
+        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
+
+#######Checkout files with ray cells########
+shannonentropy.by.cell.with.ray <- read.csv("Data/shannonentropywithR.csv", row.names=1)
+
+#Add species and habit
+match.id <- match(shannonentropy.by.cell.with.ray$Name,species.id$files)
+shannonentropy.by.cell.with.ray$species <- as.character(species.id$species[match.id])
+shannonentropy.by.cell.with.ray$habit <- as.character(species.id$habit[match.id])
+
+boxplot(shannonentropy.by.cell.with.ray$Value ~ shannonentropy.by.cell.with.ray$Name,
+        col=colores,las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
+        cex.names=0.5, cex.axis=0.3, cex.lab=1.2)
+
+plot(shannonentropy.by.cell.with.ray$Value[shannonentropy.by.cell.with.ray$Name=="974_edited_cells.txt"],
+     type ="l", xlab="Compression distance")
+lines(shannonentropy.by.cell$Value[shannonentropy.by.cell$Name=="974_edited_cells.txt"],
+      type ="l", col =my_palette[2])
+######Check out Shanon by window #####
+shannonentropy.by.window <- read.csv("Data/shannonentropy_window.csv", row.names=1)
+library(dplyr)
+shannonentropy.by.window <- shannonentropy.by.window %>%
+  group_by(Sample,Lineage) %>% mutate(id = row_number())
+
+write.csv(shannonentropy.by.window, "Data/shannonentropy_window_id.csv")
+window947 <- subset(shannonentropy.by.window, Sample == "974_edited_cells.txt")
+window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
+window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
+windowepm10 <- subset(shannonentropy.by.window, Sample == "EPM10_edited_cells.txt")
+prbeta <-subset(shannonentropy.by.window, Sample == "probLsystembeta_edited_cells.txt")
+#PLot every sample
+samples<-factor(shannonentropy.by.window$Sample)
+for (i in samples){
+  plot(shannonentropy.by.window$id[shannonentropy.by.window==i],
+       shannonentropy.by.window$Value[shannonentropy.by.window==i],type = "l",lwd = 3)
+}
+plot(window947$id,window947$Value,type = "l")
+plot(window947$id[window947$Lineage==26],window947$Value[window947$Lineage==26],type = "l",lwd = 2,
+     xlab="Window position",ylab = "Shannon Value")
+
+lineage<-factor(windowepm10$Lineage)
+for (i in lineage){
+  points(windowepm10$id[windowepm10$Lineage==i], windowepm10$Value[windowepm10$Lineage==i],
+         col="green",type = "l",lwd = 3,
+         col=pal1)
+}
+plot(windowepm10$id,windowepm10$Value, type = "l",col=pal1)
+plot(window883$id,window883$Value,type = "l",lwd = 3)
+
+
+pdf("Figures/shannon_window947.pdf")
+plot(window947$id[window947$Lineage==2],window947$Value[window947$Lineage==2],type = "l",lwd = 3)
+points(window947$id[window947$Lineage==3],window947$Value[window947$Lineage==3], col="green",type = "l",lwd = 3)
+points(window947$id[window947$Lineage==4],window947$Value[window947$Lineage==4], col="red",type = "l",lwd = 3)
+points(window947$id[window947$Lineage==5],window947$Value[window947$Lineage==5], col=pal1[1],type = "l",lwd = 3)
+points(window947$id[window947$Lineage==6],window947$Value[window947$Lineage==6], col=pal1[2],type = "l",lwd = 3)
+#points(window947$id[window947$Lineage==7],window947$Value[window947$Lineage==7], col=pal1[3],pch=19)
+#points(window947$id[window947$Lineage==8],window947$Value[window947$Lineage==8], col=pal2[1],pch=19)
+#points(window947$id[window947$Lineage==9],window947$Value[window947$Lineage==9], col=pal2[2],pch=19)
+#points(window947$id[window947$Lineage==10],window947$Value[window947$Lineage==10], col=pal2[3],pch=19)
+dev.off()
+
+pdf("Figures/shannon_window883.pdf")
+plot(window883$id[window883$Lineage==3],window883$Value[window883$Lineage==3],type = "l",lwd = 3)
+points(window883$id[window883$Lineage==2],window883$Value[window883$Lineage==2], col="green",type = "l",lwd = 3)
+points(window883$id[window883$Lineage==6],window883$Value[window883$Lineage==6], col="red",type = "l",lwd = 3)
+points(window883$id[window883$Lineage==4],window883$Value[window883$Lineage==4], col=pal1[1],type = "l",lwd = 3)
+points(window883$id[window883$Lineage==7],window883$Value[window883$Lineage==7], col=pal1[2],type = "l",lwd = 3)
+dev.off()
+
+pdf("Figures/probetaS.pdf")
+plot(prbeta$id[prbeta$Lineage==6],prbeta$Value[prbeta$Lineage==6],type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==2],prbeta$Value[prbeta$Lineage==2], col="green",type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==1],prbeta$Value[prbeta$Lineage==1], col="red",type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==4],prbeta$Value[prbeta$Lineage==4], col=pal1[1],type = "l",lwd = 3)
+points(prbeta$id[prbeta$Lineage==7],prbeta$Value[prbeta$Lineage==7], col=pal1[2],type = "l",lwd = 3)
+dev.off()
+
+summary(cell_lengths)
+
+ggplot(window947, aes(x= id, y = Value, color=Lineage)) +
+  geom_point()
+
+ggplot(lempel.by.cell, aes(x = Name, y = Value, color = species)) + geom_boxplot()
+
+
+                         
