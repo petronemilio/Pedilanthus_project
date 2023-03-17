@@ -1,4 +1,18 @@
-# 
+#####Ontogenetic history of woody cambial cells in the _Pedilanthus_ clade 
 
-This repository contains the cell file/lineage history of Pedilanthus clade species of the genus Euphorbia. Files with the cell file/lineage are in the Data folder. 
+This repository contains the cell file/lineage history of _Pedilanthus_ clade species of the genus Euphorbia. Files with the cell file/lineage are in the Data folder. 
 Within the scripts folder executables for the analysis of those files
+
+In the script files, the [wordanalysis.py] script contains several functions used in other scripts such as [count_transitions.py]
+
+#The order of analysis can proceed in the following order:
+
+	1) count_longitudes.py
+	2) count_transitions.py
+	3) count_transitionswithR.py
+	4) homogenity_index.py
+	5) wordcomparisonmethods.py####
+	6) wordcomplexity.py
+	7) wordcomplexity_withR.py
+	
+	

@@ -72,12 +72,12 @@ boxplot(lempel.by.cell$Value ~ lempel.by.cell$species, col=colores,
 dev.off()
 pdf("Figures/lempelzivhabit.pdf")
 boxplot(lempel.by.cell$Value ~ lempel.by.cell$habit, 
-        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+        col=c("#CB2314","#FAD510","#273046"),
         xlab = "Cell-file Lempel-Ziv algorithm")
 dev.off()
 pdf("Figures/lempelzivhabit_log10.pdf")
 boxplot((log10(lempel.by.cell$Value)) ~ lempel.by.cell$habit, 
-        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+        col=c("#CB2314","#FAD510","#273046"),
         xlab = "Cell-file Lempel-Ziv algorithm")
 dev.off()
 #
@@ -232,6 +232,13 @@ shannonentropy.by.cell_subset <-subset(shannonentropy.by.cell, shannonentropy.by
                                          shannonentropy.by.cell$Name != "Ray_Lsystem_edited_cells_NotConverge.txt" )
 #
 hist(shannonentropy.by.cell_subset$Value)
+#Check mean and var
+plot(tapply(shannonentropy.by.cell_subset$Value, shannonentropy.by.cell_subset$species, var),
+       tapply(shannonentropy.by.cell_subset$Value,shannonentropy.by.cell_subset$species, mean))
+#check by habit
+plot(tapply(shannonentropy.by.cell_subset$Value, shannonentropy.by.cell_subset$habit, var),
+     tapply(shannonentropy.by.cell_subset$Value,shannonentropy.by.cell_subset$habit, mean))
+#
 shannon_morethanzerolessonefive <- subset(shannonentropy.by.cell_subset, shannonentropy.by.cell_subset$Value > 0.1 & 
                                             shannonentropy.by.cell_subset$Value < 1.5)
 hist(shannon_morethanzerolessonefive$Value)
@@ -244,17 +251,39 @@ plot(shannon.cellsp.filtered.aov)
 shannon.cellsp.filtered.aov
 shannon.cellsp.kruskal <- kruskal.test(shannonentropy.by.cell_subset$Value ~
                                                   shannonentropy.by.cell_subset$species)
+kruskal.test(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$species)
 shannon.cellhabit.kruskal <- kruskal.test(shannonentropy.by.cell_subset$Value ~
                                                      shannonentropy.by.cell_subset$habit)
+kruskal.test(shannonentropy.by.cell_subset$Value ~shannonentropy.by.cell_subset$habit)
+
+pairwise.wilcox.test.habit <- pairwise.wilcox.test(shannonentropy.by.cell_subset$Value,shannonentropy.by.cell_subset$habit,
+                     p.adjust.method = "BH")
+pairwise.wilcox.test.species <- pairwise.wilcox.test(shannonentropy.by.cell_subset$Value,shannonentropy.by.cell_subset$species,
+                     p.adjust.method = "BH")
+#
+library(rcompanion)
+#Compare habit
+shannon.wilcox.habit.pvalue <- pairwise.wilcox.test.habit$p.value
+shannon.wilcox.full.habit.pvalue <- fullPTable(shannon.wilcox.habit.pvalue)
+multcompLetters(shannon.wilcox.full.habit.pvalue)
+#Species
+shannon.wilcox.pvalue <- pairwise.wilcox.test.species$p.value
+shannon.wilcox.full.pvalue <- fullPTable(shannon.wilcox.pvalue)
+multcompLetters(shannon.wilcox.full.pvalue)
+#
+aggregate(lempel.by.cell$Value, list(lempel.by.cell$habit), FUN=mean) 
+aggregate(shannonentropy.by.cell_subset$Value, list(shannonentropy.by.cell_subset$habit), FUN=median) 
+
+####
+summary(shannon.cellsp.kruskal)
+summary(shannon.cellhabit.kruskal)
 #Check if dunn test should follow.
-#########################################
-emm.shannon <- emmeans(shannon.cellsp.aov, specs = pairwise ~ species,adjust="tukey")
-emm.shannon$contrasts
-multcomp::cld(emm.shannon$emmeans, alpha = 0.10, Letters=LETTERS)
-emm.shannon.kruskal <- emmeans(shannon.cellsp.kruskal, specs = pairwise ~ species)
-emm.shannon.filt$contrasts
-multcomp::cld(emm.shannon.filt$emmeans, alpha = 0.10, Letters=LETTERS)
-??dunnTest
+library(npmc) #previosly run devtools::install_github("cran/npmc")
+#dat <- data.frame(var = shannonentropy.by.cell_subset$Value, 
+ #                 class = shannonentropy.by.cell_subset$species)
+#summary(npmc(dat), type = "Steel")
+#Make paiwise wilcox
+
 #
 pdf("Figures/shanonbysp_subset.pdf")
 boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$species,
@@ -272,7 +301,7 @@ dev.off()
 
 #                
 pdf("Figures/shanonbysp_subset_filtered.pdf")
-boxplot(shannon_morethanzerolessonefive$Value ~ shannon_morethanzerolessonefive$species,
+boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$species,
         las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
         col=c("#273046", "#FAD510","#FAD510","#FAD510","#FAD510","#273046","#273046","#273046",
                        "#FAD510","#273046","#FAD510","#273046","#273046","#273046","#CB2314","#CB2314"),
@@ -288,13 +317,10 @@ boxplot(shannon_morethanzerolessonefive$Value ~ shannon_morethanzerolessonefive$
 dev.off()
 #by category
 pdf("Figures/shanonbyhabit.pdf") # Para guardar en PDF
-boxplot(shannon_morethanzerolessonefive$Value ~ shannon_morethanzerolessonefive$habit,
-        col=c("#FAD510","#CB2314","#CB2314","#273046"),
+boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$habit,
+        col=c("#CB2314","#FAD510","#273046"),
         las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
 dev.off()    
-boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$habit,
-        col=c("#FAD510","#CB2314","#CB2314","#273046"),
-        las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
 
 #######Checkout files with ray cells########
 shannonentropy.by.cell.with.ray <- read.csv("Data/shannonentropywithR.csv", row.names=1)

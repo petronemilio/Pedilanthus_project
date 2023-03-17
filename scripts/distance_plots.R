@@ -175,6 +175,7 @@ lm.maxwords_totalcodedcellshabit <- lm(log10(withoutLsystems$NumberOfWords)~
                                          log10(withoutLsystems$TotalCodedCellsWithoutRays)+
                                          withoutLsystems$habit)
 summary(lm.maxwords_totalcodedcellshabit)                        
+confint(lm.maxwords_meancelllengthhabit)
 interceptxeric<-lm.maxwords_totalcodedcellshabit$coefficients[1]+lm.maxwords_totalcodedcellshabit$coefficients[3]
 interceptmesic<-lm.maxwords_totalcodedcellshabit$coefficients[1] 
 slope <-lm.maxwords_totalcodedcellshabit$coefficients[2] 
