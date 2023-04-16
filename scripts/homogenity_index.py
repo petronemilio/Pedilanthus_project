@@ -109,7 +109,7 @@ for i in range(0,len(filenames.keys())):
     conductivity_code[list(filenames.keys())[i]]=[] #add key element to dict
 
 for k, v in filenames.items():
-    for z in v[1]:
+    for z in v[2]:
         conductivity_code[k].append(conduc_index(z)) 
 #Make it for the storage index
 storage_code = {} #Empty dictionary to add values into
@@ -118,7 +118,7 @@ for i in range(0,len(filenames.keys())):
 
 for k, v in filenames.items():
     prueba_list=[]
-    for z in v[1]:
+    for z in v[2]:
         storage_code[k].append(storage_index(z))
 #Make it for the SUPPORT index
 support_code = {} #Empty dictionary to add values into
@@ -127,7 +127,7 @@ for i in range(0,len(filenames.keys())):
 
 for k, v in filenames.items():
     prueba_list=[]
-    for z in v[1]:
+    for z in v[2]:
         support_code[k].append(support_index(z))
 
 #Calcular el índice de homogeneidad
@@ -199,10 +199,10 @@ for keys, values in filenames.items():
     with open(path+values[0]) as f:
         x = f.readlines()
         filenames.setdefault(keys,[]).append(x)
-    values[1] = [x.strip() for x in values[1]]  
-    values[1] = [x.upper() for x in values[1]]  
+    values[2] = [x.strip() for x in values[2]]  
+    values[2] = [x.upper() for x in values[2]]  
     my_lens[values[0]]=[]
-    for s in values[1]:
+    for s in values[2]:
         my_lens[values[0]].append(len(s))
 #Create dict with values of percentage of 1's
 conductivity_freq = {} #Empty dictionary to add values into
@@ -263,5 +263,11 @@ for k,v in support_freq.items():
         indexall.append(v[i])
 df["supportfreq"]= indexall    
 
+indexall=[]
+for k, v in filenames.items():
+    for z in v[2]:
+        indexall.append(z)
+df["sequences"]= indexall       
+        
 df.to_csv('../Data/homogentiy_index.csv')
 

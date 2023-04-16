@@ -10,6 +10,7 @@ library(scatterplot3d)
 library(data.table)
 library(fitdistrplus)
 library(stringr)
+library(scales)
 ##sET WORKING DIRECTORY
 getwd()
 ###
@@ -53,7 +54,6 @@ agg <- aggregate(Number.of.cells ~ species, cell_lengths, function(x){
   c(Mean = mean(x), IQR = unname(iqr), lower = lo, high = hi)
 }) 
 agg
-summaris
 #####
 p  <- ggplot(cell_lengths, aes(Number.of.cells, colour=species, fill=species))
 p  <- p + geom_density(alpha=0.2)
@@ -334,6 +334,9 @@ homogenity_index$lengthstd <- (homogenity_index$length)/(homogenity_index$maxlen
 
 ggplot(homogenity_index, aes(x=support, y=conductivity, colour=sp))+
   geom_point() #+ scale_color_manual(values=my_palette)
+ggplot(homogenity_index, aes(x=conductivity, y=support, colour=habit))+
+  geom_point() #+ scale_color_manual(values=my_palette)
+
 ggplot(homogenity_index, aes(x=lengthstd, y=conductivity, colour=habit))+
   geom_point() #+ scale_color_manual(values=my_palette)
 
@@ -407,28 +410,89 @@ points3d(geometry[,1],geometry[,2],geometry[,3], size = 5)
  #                             "#0152a1","#005e18","#abb2ff"))+
   #theme_bw()
 
+homogenity_index <- subset(homogenity_index, homogenity_index$habit != "L-systemCSM" & 
+         homogenity_index$habit != "L-systemCSX" & homogenity_index$habit != "RayL-system" ) 
 ###Plot using length
-plot(homogenity_index$conductivity~homogenity_index$length)
-plot(homogenity_index$storage ~ homogenity_index$length)
-points(homogenity_index$storage[homogenity_index$habit=="mesic"] ~
-       homogenity_index$length[homogenity_index$habit=="mesic"], col="green")
-points(homogenity_index$storage[homogenity_index$habit=="xeric"] ~
-         homogenity_index$length[homogenity_index$habit=="xeric"], col="red")
-plot(homogenity_index$conductivity ~ homogenity_index$length)
+pdf("Figures/support_filelength.pdf")
+plot(NULL, xlim=c(0,700), ylim=c(-0.7,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$support[homogenity_index$habit=="probL-system"] ~
+      homogenity_index$length[homogenity_index$habit=="probL-system"], 
+       col=alpha("#CB2314",0.9),pch=19)
+points(homogenity_index$support[homogenity_index$habit=="probetaL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probetaL-system"], 
+       col=alpha("#CB2314",0.9),pch=19)
+points(homogenity_index$support[homogenity_index$habit=="mesic"] ~
+       homogenity_index$length[homogenity_index$habit=="mesic"], 
+       col=alpha("#FAD510", 0.6),pch=19)
+points(homogenity_index$support[homogenity_index$habit=="xeric"] ~
+         homogenity_index$length[homogenity_index$habit=="xeric"], 
+       col=alpha("#273046",0.4), pch=19)
+dev.off()
+##
+pdf("Figures/sotrage_filelength_separate.pdf")
+par(mfrow=c(3,1))
+plot(NULL, xlim=c(0,700), ylim=c(-0.7,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$support[homogenity_index$habit=="mesic"] ~
+         homogenity_index$length[homogenity_index$habit=="mesic"], col="#FAD510",pch=19)
+plot(NULL, xlim=c(0,700), ylim=c(-0.6,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$support[homogenity_index$habit=="xeric"] ~
+         homogenity_index$length[homogenity_index$habit=="xeric"], col="#273046",pch=19)
+plot(NULL, xlim=c(0,700), ylim=c(-0.6,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$support[homogenity_index$habit=="probL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probL-system"], col="#CB2314",pch=19)
+points(homogenity_index$support[homogenity_index$habit=="probetaL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probetaL-system"], col="#CB2314",pch=19)
+dev.off()
+#
+pdf("Figures/conductivity_filelength.pdf")
+plot(NULL, xlim=c(0,700), ylim=c(-0.3,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$conductivity[homogenity_index$habit=="probL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probL-system"], 
+       col=alpha("#CB2314",0.9),pch=19)
+points(homogenity_index$conductivity[homogenity_index$habit=="probetaL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probetaL-system"],
+       col=alpha("#CB2314",0.9),pch=19)
 points(homogenity_index$conductivity[homogenity_index$habit=="mesic"] ~
-         homogenity_index$length[homogenity_index$habit=="mesic"], col="green")
+         homogenity_index$length[homogenity_index$habit=="mesic"],  
+       col=alpha("#FAD510",0.6),pch=19)
 points(homogenity_index$conductivity[homogenity_index$habit=="xeric"] ~
-         homogenity_index$length[homogenity_index$habit=="xeric"], col="red")
+         homogenity_index$length[homogenity_index$habit=="xeric"], 
+       col=alpha("#273046",0.4),pch=19)
+dev.off()
+#
+pdf("Figures/conductivity_filelength_separate.pdf")
+par(mfrow=c(3,1))
+plot(NULL, xlim=c(0,700), ylim=c(-0.3,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$conductivity[homogenity_index$habit=="mesic"] ~
+         homogenity_index$length[homogenity_index$habit=="mesic"],  col="#FAD510",pch=19)
+plot(NULL, xlim=c(0,700), ylim=c(-0.3,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$conductivity[homogenity_index$habit=="xeric"] ~
+         homogenity_index$length[homogenity_index$habit=="xeric"], col="#273046",pch=19)
+plot(NULL, xlim=c(0,700), ylim=c(-0.3,1), ylab="y label", xlab="x lablel")
+points(homogenity_index$conductivity[homogenity_index$habit=="probL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probL-system"], col="#CB2314",pch=19)
+points(homogenity_index$conductivity[homogenity_index$habit=="probetaL-system"] ~
+         homogenity_index$length[homogenity_index$habit=="probetaL-system"], col="#CB2314",pch=19)
+dev.off()
+#
+#
 homogenity_index_subset <- subset(homogenity_index,homogenity_index$sp != "L-systemXeric" & 
-         homogenity_index$sp != "L-systemMesic" & homogenity_index$sp != "RayL-system" &
-           homogenity_index$sp != "probL-system")
+         homogenity_index$sp != "L-systemMesic" & homogenity_index$sp != "RayL-system")
 
 table(homogenity_index_subset$conductivity> 0.0)
-homogenity_index_justpedilanthus <- subset(homogenity_index_subset, 
+homogenity_index_justpedilanthus <- subset(homogenity_index_subset,homogenity_index$sp != "probL-system" & 
                                            homogenity_index_subset$sp !="probetaL-system")
 table(homogenity_index_justpedilanthus$conductivity> 0.0)
+table(homogenity_index_justpedilanthus$conductivity== 1)
 temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$conductivity == 1)
 table(temporal$conductivityfreq==0)
+temporal <- subset(temporal, temporal$conductivityfreq==0)
+table(temporal$habit)
+#
+table(homogenity_index_justpedilanthus$conductivity <=0)
+temporal<-subset(homogenity_index_justpedilanthus ,homogenity_index_justpedilanthus$conductivity <=0)
+table(temporal$habit)
+temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$support < 0)
 temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$conductivity > 0.5 &
                  homogenity_index_justpedilanthus$conductivity < 0.85)
 table(homogenity_index_justpedilanthus$support <1)
@@ -439,6 +503,16 @@ temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanth
 table(temporal$habit=="xeric")
 temporal<-subset(temporal,temporal$habit=="xeric")
 table(temporal$support>0)
+#Calc some values of the l-systems
+homogeneity_index_lsystems<- subset(homogenity_index_subset, homogenity_index_subset$habit != "mesic" &
+                               homogenity_index_subset$habit != "xeric")
+
+table(homogeneity_index_lsystems$conductivity > 0.7)
+table(homogeneity_index_lsystems$conductivity > 0.1 & 
+        homogeneity_index_lsystems$conductivity < 0.7)
+table(homogeneity_index_lsystems$support > 0.0 & 
+        homogeneity_index_lsystems$support < 0.5)
+
 #
 pal4 <-my_palette[as.numeric(as.factor(homogenity_index_subset$habit))]
 pdf("Figures/morphospace_length.pdf")
