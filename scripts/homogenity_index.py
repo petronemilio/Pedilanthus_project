@@ -2,7 +2,6 @@
 #-*- coding: utf-8 -*-
 
 # Open the file and evaluate safe every line in a list
-#!/usr/bin/python
 #-*- coding: utf-8 -*-
 
 #import matplotlib.pyplot as plt
@@ -39,6 +38,8 @@ def conduc_index(string):
     return(c)
 
 def storage_index(string):
+    """Function to transform a sequence of cells into
+    a binary sequence of 0 and 1 based on storage properties"""
     c = ''
     string += ' '
     for z in range(0,len(string)):
@@ -57,6 +58,8 @@ def storage_index(string):
     return(c)
 
 def support_index(string):
+    """Function to transform a sequence of cells into
+    a binary sequence of 0 and 1 based on support properties"""
     c = ''
     string += ' '
     for z in range(0,len(string)):
@@ -72,66 +75,10 @@ def support_index(string):
             c += '1'     
     return(c)
 
-#First define the list of files that have the cell files
-path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
-files = os.listdir(path)
-filenames = {} #Create a dictionary to save paths for all data cells
-for i in files:
-    m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
-    filenames[m.group()] = [i]
-
-#Loop to load the files of cells and append them in filenames
-my_vocabulary = set()
-for keys, values in filenames.items():
-    with open(path+values[0]) as f:
-        x = f.readlines()
-        filenames.setdefault(keys,[]).append(x)
-    values[1] = [x.strip() for x in values[1]]  #remove the /n 
-    values[1] = [x.upper() for x in values[1]]  #put all letters in upper
-    for s in values[1]:
-        for z in s:
-            my_vocabulary.add(z)
-            
-#Now dictoniary is ready for analysis
-#Quitar los radios y sin que se afecte el orden de las otras células
-for values in filenames.values(): 
-    values.append([])
-    for i in range(0,len(values[1])):
-        x = values[1][i].replace('R','')
-        if x == '':
-            pass
-        else:
-            values[2].append(x)
-
-##Create an empty dictionary to save the binary files
-conductivity_code = {} #Empty dictionary to add values into
-for i in range(0,len(filenames.keys())):
-    conductivity_code[list(filenames.keys())[i]]=[] #add key element to dict
-
-for k, v in filenames.items():
-    for z in v[2]:
-        conductivity_code[k].append(conduc_index(z)) 
-#Make it for the storage index
-storage_code = {} #Empty dictionary to add values into
-for i in range(0,len(filenames.keys())):
-    storage_code[list(filenames.keys())[i]]=[] #add key element to dict
-
-for k, v in filenames.items():
-    prueba_list=[]
-    for z in v[2]:
-        storage_code[k].append(storage_index(z))
-#Make it for the SUPPORT index
-support_code = {} #Empty dictionary to add values into
-for i in range(0,len(filenames.keys())):
-    support_code[list(filenames.keys())[i]]=[] #add key element to dict
-
-for k, v in filenames.items():
-    prueba_list=[]
-    for z in v[2]:
-        support_code[k].append(support_index(z))
-
 #Calcular el índice de homogeneidad
 def homogenity_index(string):
+    """"After recieving a binary sequence, calc the distribution 
+    of 00, 01, 10, and 11"""
     n01 = 0
     n10 = 0
     n11 = 0
@@ -157,8 +104,10 @@ def homogenity_index(string):
     elif 0 not in {n0,n1}:
         d=((n00*n11)-(n10*n01))/(n0*n1)    
     return(d)
+
 ##
 def percentage01(string):  
+    """FUnction to return the % of 0 and 1s in a sequence"""
     if string.count('0') == 0:
         return(1)
     elif string.count('1') == 0:
@@ -167,17 +116,70 @@ def percentage01(string):
         ones = (string.count('1')/len(string))
         return(ones)
 
-conductivity_index = {} #Empty dictionary to add values into
+#First define the list of files that have the cell files
+path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
+files = os.listdir(path)
+filenames = {} #Create a dictionary to save paths for all data cells
+for i in files:
+    m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
+    filenames[m.group()] = [i]
 
+#Loop to load the files of cells and append them in filenames
+my_vocabulary = set()
+for keys, values in filenames.items():
+    with open(path+values[0]) as f:
+        x = f.readlines()
+        filenames.setdefault(keys,[]).append(x)
+    values[1] = [x.strip() for x in values[1]]  #remove the /n 
+    values[1] = [x.upper() for x in values[1]]  #put all letters in upper
+    for s in values[1]:
+        for z in s:
+            my_vocabulary.add(z)
+            
+#Now dictoniary is ready for analysis
+#Remove ray cells without changing the order of lineages
+for values in filenames.values(): 
+    values.append([]) 
+    for i in range(0,len(values[1])):
+        x = values[1][i].replace('R','')
+        if x == '':
+            pass
+        else:
+            values[2].append(x)
+
+##Create an empty dictionary to save the binary files
+# After creating dictionaries with binary sequence for each 
+# index, calc the values of homogeneity
+conductivity_code = {} #Empty dictionary to add conductivity values into
+for i in range(0,len(filenames.keys())):
+    conductivity_code[list(filenames.keys())[i]]=[] #add key element to dict
+for k, v in filenames.items():
+    for z in v[2]:
+        conductivity_code[k].append(conduc_index(z)) 
+#Make it for the storage index
+storage_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    storage_code[list(filenames.keys())[i]]=[] #add key element to dict
+for k, v in filenames.items():
+    prueba_list=[]
+    for z in v[2]:
+        storage_code[k].append(storage_index(z))
+#Make it for the SUPPORT index
+support_code = {} #Empty dictionary to add values into
+for i in range(0,len(filenames.keys())):
+    support_code[list(filenames.keys())[i]]=[] #add key element to dict
+for k, v in filenames.items():
+    prueba_list=[]
+    for z in v[2]:
+        support_code[k].append(support_index(z))
+conductivity_index = {} #Empty dictionary to add values into
 for i in range(0,len(filenames.keys())):
     conductivity_index[list(filenames.keys())[i]]=[] 
 for k, v in conductivity_code.items():
     prueba_list=[]
     for z in v:
          conductivity_index[k].append(homogenity_index(z)) 
-#
 storage_index = {} #Empty dictionary to add values into
-
 for i in range(0,len(filenames.keys())):
     storage_index[list(filenames.keys())[i]]=[] 
 for k, v in storage_code.items():
@@ -186,7 +188,6 @@ for k, v in storage_code.items():
          storage_index[k].append(homogenity_index(z)) 
 #
 support_index = {} #Empty dictionary to add values into
-
 for i in range(0,len(filenames.keys())):
     support_index[list(filenames.keys())[i]]=[] 
 for k, v in support_code.items():

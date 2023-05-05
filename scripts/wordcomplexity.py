@@ -12,8 +12,9 @@ import numpy as np
 import itertools
 import csv
 
-#Load all files using os and re
-##
+# In this script Shannon entropy and Lempel ziv values are calculated for 
+# each cell file.
+## Load all files using os and re
 path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
 files = os.listdir(path)
 filenames = {} #Create a dictionary to save paths for all data cells

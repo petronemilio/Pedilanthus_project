@@ -10,8 +10,8 @@ import re
 import pandas as pd
 import itertools
 import csv
-#Load all files using os and re
-##
+## Script to count total number of words at different k-mer lengths 
+###Load all files using os and re
 path = '../Data/Cell_files_data/ConvergeAssOtherLineage/'
 files = os.listdir(path)
 filenames = {} #Create a dictionary to save paths for all data cells
@@ -19,7 +19,7 @@ for i in files:
     m = re.search(r'.*[^_edited_cells_NotConverge.txt]',i)
     filenames[m.group()] = [i]
 
-#Loop to load the files of cells and append them in filenames
+#Loop to load the cell lineages and append them in filenames within a dictionary
 my_vocabulary = set()
 for keys, values in filenames.items():
     with open(path+values[0]) as f:
@@ -32,7 +32,7 @@ for keys, values in filenames.items():
             my_vocabulary.add(z)
             
 #Now dictoniary is ready for analysis.
-#Quitar los radios y sin que se afecte el orden de las otras células
+#Remove ray cells without changing the order of fusiform derived cells.
 for values in filenames.values(): 
     values.append([])
     for i in range(0,len(values[1])):
@@ -43,10 +43,10 @@ for values in filenames.values():
             values[2].append(x)
 
 #################  Create a dictionary to save the word counting #########
-word_diversity = {} #Empty dictionary to add values into
-for i in range(1,35):
-    word_diversity[i]={}
-    for values in filenames.values(): 
+word_diversity = {} #Empty dictionary to add values of word counts into
+for i in range(1,35): #loop to add words at k-mer length from 1 to 35
+    word_diversity[i]={} 
+    for values in filenames.values():   
         word_diversity[i][values[0]] = wordanalysis.get_all_words(values[2], i)
 
 ###Write matrix output from df
