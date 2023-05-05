@@ -178,7 +178,8 @@ for (i in species){
   temporal <- BIEN_trait_species(i, all.taxonomy=TRUE, political.boundaries = TRUE)
   traits_dataframe <- rbind(traits_dataframe, temporal)
 }
-####PithXylem
+
+####PithXylem ######
 pedilanthus_samples <- read.csv("meta/samples.csv")
 matcher <- match(pedilanthus_samples$Species, pedilanthus_notcultivated$Especie)
 pedilanthus_samples$Habit<-pedilanthus_notcultivated$Habit[matcher]
@@ -234,13 +235,18 @@ points(log10(pedilanthus_samples$xylempith.ratio[pedilanthus_samples$Habit=="Xer
 points(log10(pedilanthus_samples$xylempith.ratio[pedilanthus_samples$Habit=="Mesic"])~
          log10(pedilanthus_samples$Height.cm.[pedilanthus_samples$Habit=="Mesic"]),
        col="blue")
+
+pdf("Figures/xylem_pithratio.pdf")
 boxplot(pedilanthus_samples$xylempith.ratio ~ pedilanthus_samples$Habit)
+dev.off()
+
 pedilanthus_samples$stemdiametertotal-pedilanthus_samples$pithdiameter
 pedilanthus_samples$xylemdiameter <- pedilanthus_samples$stemdiameter.xylem - pedilanthus_samples$pithdiameter
 pedilanthus_samples$xylemfraction <- (pedilanthus_samples$xylemdiameter/
                                         (pedilanthus_samples$stemdiameter.xylem+pedilanthus_samples$pithdiameter))*100
 pedilanthus_samples$pithfraction <- (pedilanthus_samples$pithdiameter/
                                         (pedilanthus_samples$stemdiameter.xylem+pedilanthus_samples$pithdiameter))*100
+
 boxplot(pedilanthus_samples$xylemfraction~pedilanthus_samples$Habit)
 boxplot(pedilanthus_samples$pithfraction~pedilanthus_samples$Habit)
 

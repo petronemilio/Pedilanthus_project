@@ -503,6 +503,11 @@ temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanth
 table(temporal$habit=="xeric")
 temporal<-subset(temporal,temporal$habit=="xeric")
 table(temporal$support>0)
+temporal<-subset(homogenity_index_justpedilanthus,homogenity_index_justpedilanthus$habit=="xeric")
+temporal<-subset(temporal, temporal$conductivity > 0.5)
+temporal1<-subset(temporal, temporal$support >= 0.0)
+1279/1804
+table(temporal1$support)
 #Calc some values of the l-systems
 homogeneity_index_lsystems<- subset(homogenity_index_subset, homogenity_index_subset$habit != "mesic" &
                                homogenity_index_subset$habit != "xeric")

@@ -64,24 +64,6 @@ for y in word_diversity.values():
 #Convert the list into dataframe
 data = pd.DataFrame(word_features, columns=['file','NumberOfWords'])
 data.to_csv('../Data/word_counts_all/wordcounts_all.csv')
-################################## Calc Euclidean distance   #################
-euc_list = {}
-for k, v in word_diversity.items():
-    header = ["File1","File2", "Euc_dist"]
-    euc_list[k]={}
-    my_list=[]
-    for k1, k2 in itertools.combinations(v, 2):
-        my_list.append([k1,k2, wordanalysis.euc_dist(v[k1], v[k2])])
-    euc_list[k]=my_list
-    f = "../Data/euclidean_distance_all/euclidean_distance"+str(k)+'.csv'
-    # writing to csv file  
-    with open(f, 'w') as csvfile:  
-    # creating a csv writer object  
-        csvwriter = csv.writer(csvfile)      
-    # writing the fields  
-        csvwriter.writerow(header)  
-    # writing the data rows  
-        csvwriter.writerows(my_list) 
 
 ####Repeat but counting only words that appear more than once: #############
 #
@@ -106,25 +88,4 @@ for y in word_diversity.values():
 #Convert the list into dataframe
 data = pd.DataFrame(word_features, columns=['file','NumberOfWords'])
 data.to_csv('../Data/word_counts_morethanone/wordcounts_all.csv')
-
-#Repeat euclidean distances for word counts with more than one:
-euc_list = {}
-for k, v in word_diversity.items():
-    header = ["File1","File2", "Euc_dist"]
-    euc_list[k]={}
-    my_list=[]
-    for k1, k2 in itertools.combinations(v, 2):
-        my_list.append([k1,k2, wordanalysis.euc_dist(v[k1], v[k2])])
-    euc_list[k]=my_list
-    f = "../Data/euclidean_distance_morethanone/euclidean_distance"+str(k)+'.csv'
-    # writing to csv file  
-    with open(f, 'w') as csvfile:  
-    # creating a csv writer object  
-        csvwriter = csv.writer(csvfile)      
-    # writing the fields  
-        csvwriter.writerow(header)  
-    # writing the data rows  
-        csvwriter.writerows(my_list) 
-
-
 
