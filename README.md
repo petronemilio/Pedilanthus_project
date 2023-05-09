@@ -7,9 +7,9 @@ output:
 
 #### The evolution of ontogenetic _decision-making_ in the wood of a clade of tropical plants. 
 
-## Description
+## Description of the data and file structure
 
-This repository contains the data and code used for reproducing the results and figures of the paper/manuscript, "The evolution of ontogenetic _decision-making_ in the wood of a clade of tropical plants," by Emilio Petrone-Mendoza, Mariana Benítez, María Elena Lárraga, and Mark E. Olson (UNAM, Mexico).
+This repository contains the data and code used for reproducing the results and figures of the manuscript titled, "The evolution of ontogenetic _decision-making_ in the wood of a clade of tropical plants," by Emilio Petrone-Mendoza, Mariana Benítez, María Elena Lárraga, and Mark E. Olson (UNAM, Mexico).
 
 The repository is divided in: 
 
@@ -31,7 +31,7 @@ The repository is divided in:
     - `896_edited.txt`
     - `939_edited.txt`
 
-The `sample_edited.txt` files are tab delimited files containing three columns: the first one specifying the species of the sample, the second has the cell lineage number, and the third one has the sequence of coded cells.  
+Each file within the `Raw_data` folder comes from a different sample. The alphanumeric code before the `_edited.txt` is from the sample. The `sample_edited.txt` files are tab delimited files containing three columns: the first one specifying the species of the sample, the second has the cell lineage number, and the third one has the sequence of coded cells.  
 
 | Species       | Cell file number | Cell lineage sequence |
 | -------------- | :----:    | :----:   |
@@ -55,7 +55,7 @@ sed -i 's/(Converge-)//g' Data/Raw_data/P_macrocarpus/EPM13_edited_cells.txt
 #to add cells as a new cell file after codifying a convergence event add:
 sed -Ei 's/\(Converge-\)/&\n/g' 845_edited_cells_NotConverge.txt
 ```
-We moved the edited files to the Cell_files_data. Files with convergence events coded as separate cell lineages were saved in `Data/Cell_files_data/ConvergeAssOtherLineage`
+We moved the edited files to the `Data/Cell_files_data`. Files with convergence events coded as separate cell lineages were saved in `Data/Cell_files_data/ConvergeAssOtherLineage`
 
 ### Workflow
 Global functions were created and located in the `wordanalysis.py` python script. The script has functions to count number and type of cells, length of lineages, word counting, estimating euclidean distance, and measuring Lempel-Ziv compression and Shannon-Entropy estimation methods. The `l-system.py` script generates the virtual wood cell lineages. Previous to starting the cell lineage analysis we run the `l-system.py` to include the virtual cell lineages with the rest of the _Pedilanthus_ lineages.

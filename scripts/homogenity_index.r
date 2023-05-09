@@ -1,4 +1,4 @@
-#Para poner tablas en formato wide agregar bibliotecas 
+#Add libraries needed for the script!
 library(tidyr)
 library(dplyr)
 library(ggplot2)
@@ -11,26 +11,28 @@ library(data.table)
 library(fitdistrplus)
 library(stringr)
 library(scales)
-##sET WORKING DIRECTORY
+##cHECK WORKING DIRECTORY
 getwd()
-###
-
-#####Save palettes for graphs
+########Save palettes for graphs
 pal1 <- wes_palette("BottleRocket2")
 pal2 <- wes_palette("Rushmore1")
 pal3 <- wes_palette("Darjeeling1")
 pal4 <- wes_palette("FantasticFox1")
 my_palette <- c(pal1,pal2,pal3,pal4)
 ############################################
-#Graficar la distribución de las longitudes de las series. Including rays
+# Part to plot cell length distribution
+# including rays
+############################################
 cell_lengths <- read.csv("Data/cell_lengths_notConverge.csv")
-files <- levels(as.factor(cell_lengths$Sample))
+files <- levels(as.factor(cell_lengths$Sample)) #create vector of file info
+#create vector with species to bind to files 
 species<- c("E. peritropoides","E. peritropoides","E. bracteata","E. lomelli","E. colligata","E. coalcomanensis",
             "E. coalcomanensis","E. calcarata","E. calcarata","E. finkii","E. calcarata","E. tithymaloides",
             "E. conzattii","E. cyri","E. peritropoides", "E. cymbifera","E. tehuacana","L-systemMesic",
             "L-systemXeric","E. diazlunana","E. diazlunana","E. diazlunana","E. lomelli",
             "E. cyri", "E. cymbifera", "E. tithymaloides","E. tithymaloides","E. personata",
-            "E. personata","probL-system","probetaL-system","RayL-system")
+            "E. personata","probL-system","probetaL-system","RayL-system") 
+#create vector of growth form
 habit <- c("mesic","mesic","xeric","xeric","mesic","mesic",
            "mesic","mesic","mesic","mesic","mesic","xeric",
            "mesic","xeric","mesic","xeric","xeric","L-systemCSM",
@@ -38,14 +40,11 @@ habit <- c("mesic","mesic","xeric","xeric","mesic","mesic",
            "xeric","xeric","xeric","xeric","xeric",
            "xeric","probL-system","probetaL-system","RayL-system")
 species.id <- as.data.frame(cbind(files,species,habit))
-insert <- "_NotConverge"
-#species.id$filesconverge <- sub("(?<=\\w)(?=\\.)", insert, species.id$files, perl=TRUE)
-#write.csv(species.id,"meta/speciesID.csv")
 #####
 match.id <- match(cell_lengths$Sample,species.id$files)
 cell_lengths$species <- as.character(species.id$species[match.id])
 #
-cell_lengths$habit <- as.character(species.id$habit[match.id])
+cell_lengths$habit <- as.character(species.id$habit[match.id]) #add growth form to cell lengths
 agg <- aggregate(Number.of.cells ~ species, cell_lengths, function(x){
   qq <- quantile(x, probs = c(1, 3)/4)
   iqr <- diff(qq)
@@ -53,11 +52,9 @@ agg <- aggregate(Number.of.cells ~ species, cell_lengths, function(x){
   hi <- qq[2] + 1.5*iqr
   c(Mean = mean(x), IQR = unname(iqr), lower = lo, high = hi)
 }) 
-agg
 #####
 p  <- ggplot(cell_lengths, aes(Number.of.cells, colour=species, fill=species))
 p  <- p + geom_density(alpha=0.2)
-p
 cell_lengths_subset<-subset(cell_lengths, habit != "RayL-system")
 cell_lengths_subset<-subset(cell_lengths_subset, species != "L-systemMesic")
 cell_lengths_subset<-subset(cell_lengths_subset, species != "L-systemXeric")
@@ -71,7 +68,7 @@ pal<-c(wes_palette("Cavalcanti1"),wes_palette("GrandBudapest1"),wes_palette("Gra
 par(mar=c(7,5,1,1))
 new_pal<-c("#cb57aa","#6db744","#8760cf","#c2af45","#7d7fc5","#dd8d4a","#45b0cf","#cf483c",
            "#5cc08c","#c56179","#3b824e","#976530","#76853a")
-
+#Make two boxplots in horizontal and vertical axes
 boxplot(cell_lengths$Number.of.cells~species, cell_lengths,horizontal=TRUE,
         col=new_pal)
 boxplot(cell_lengths$Number.of.cells~cell_lengths$species,
@@ -79,17 +76,6 @@ boxplot(cell_lengths$Number.of.cells~cell_lengths$species,
 #Remove cell lengths minor to 3 cells
 cell_lengths <- subset(cell_lengths, cell_lengths$Number.of.cells > 3)
 cell_lengths$species <- with(cell_lengths, reorder(species,Number.of.cells,mean))
-
-boxplot(Number.of.cells~species, cell_lengths,horizontal = TRUE, las=1.5,
-        col=c(pal), xlab="Longitud de las filas",ylab = NULL, cex=0.4,
-        names=c(expression(italic("E. lomelli")),expression(italic("E. cymbifera")),
-                expression(italic("E. tithymaloides")), expression(italic("E. diazlunana")),
-                expression(italic("E. personata")), expression(italic("E. finkii")),
-                expression(italic("E. bracteata")),expression(italic("E. coalcomanensis")),
-                expression(italic("E. peritropoides")),expression(italic("E. colligata")),
-                expression(italic("E. cyri")),expression(italic("E. tehuacana")),
-                expression(italic("E. calcarata")),expression(italic("E. conzattii"))),
-        cex.names=1.1, cex.axis=0.8, cex.lab=1.2)
 ##
 boxplot(cell_lengths$Number.of.cells~cell_lengths$habit,
         col=new_pal)
@@ -97,21 +83,15 @@ boxplot(cell_lengths$Number.of.cells~cell_lengths$habit,
 summary(cell_lengths$Number.of.cells)
 cellfilemean<-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$species), FUN=mean)
 cellfilemean[with(cellfilemean, order(x)),]
-
 numbercells<-aggregate(cell_lengths$Number.of.cells, list(cell_lengths$Sample), FUN=mean)
 ##
-hist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"])
-hist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"])
-hist(cell_lengths$Number.of.cells[cell_lengths$habit=="L-systemCSM"])
-hist(cell_lengths$Number.of.cells[cell_lengths$habit=="probetaL-system"])
-
 q  <- ggplot(cell_lengths, aes(Number.of.cells, colour=habit, fill=habit))
 q  <- q + geom_density(alpha=0.2)
 q
-
+#Check type of length distribution with descdist
 descdist(cell_lengths$Number.of.cells[cell_lengths$habit=="xeric"], discrete = FALSE)
 descdist(cell_lengths$Number.of.cells[cell_lengths$habit=="mesic"], discrete = FALSE)
-
+#Chek violin plot of cell lengths
 ggplot(cell_lengths, aes(x =habit,y=Number.of.cells, fill = habit)) +
   geom_violin()+ coord_flip()+
   scale_y_continuous(breaks = c(0,50,100,150,200,250,300,350,400,500,600))+
@@ -135,23 +115,6 @@ tehua<- subset(cell_lengths,species=="E. tehuacana", select=c(species, Number.of
 cymbi<- subset(cell_lengths,species=="E. cymbifera", select=c(species, Number.of.cells))
 perso<- subset(cell_lengths,species=="E. personata", select=c(species, Number.of.cells))
 #
-descdist(calca$Number.of.cells)
-descdist(tithy$Number.of.cells)
-descdist(cyri$Number.of.cells)
-descdist(brac$Number.of.cells)
-descdist(finkii$Number.of.cells)
-descdist(colli$Number.of.cells)
-descdist(diazlunana$Number.of.cells)
-descdist(coalco$Number.of.cells)
-descdist(lomelli$Number.of.cells)
-descdist(conza$Number.of.cells)
-descdist(peri$Number.of.cells)
-descdist(colli$Number.of.cells)
-descdist(peri$Number.of.cells)
-descdist(tehua$Number.of.cells)
-descdist(cymbi$Number.of.cells)
-descdist(perso$Number.of.cells)
-
 pdf("Figures/cell_lengths.pdf")
 vioplot(brac$Number.of.cells,lomelli$Number.of.cells,tithy$Number.of.cells,
         cyri$Number.of.cells,cymbi$Number.of.cells, tehua$Number.of.cells,
@@ -203,14 +166,13 @@ boxplot(log10(cell_lengths_subset$Number.of.cells) ~ cell_lengths_subset$habit, 
 dev.off()
 
 ############################################################
-#Graficar los tipos celulares
-tipos_celulares <- read.csv("Data/wordcountsR1.csv")
+#Plot cell frequencies ####### 
+tipos_celulares <- read.csv("Data/word_counts_all/wordcounts_all.csv")
 colnames(tipos_celulares)[1] = "Sample"
 match.id <- match(tipos_celulares$Sample,species.id$files)
 tipos_celulares$species <- as.character(species.id$species[match.id])
 #replace nas with 0s
 tipos_celulares[is.na(tipos_celulares)] <- 0
-
 tipos_celulares$totalcells <-rowSums(tipos_celulares[,c(2:5)])
 tipos_celulares_freq <- tipos_celulares[,c(2:5,7)] / tipos_celulares[,7] 
 tipos_celulares_freq$sample <- tipos_celulares$Sample
