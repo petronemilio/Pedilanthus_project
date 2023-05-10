@@ -204,18 +204,7 @@ boxplot(shannonentropy.by.cell$Value ~ shannonentropy.by.cell$species, col=color
                  expression("probL-system"),expression("RayL-system")),
         cex.names=0.5, cex.axis=0.8, cex.lab=1.2)
 dev.off()
-#
-pdf("Figures/entropybyfile.pdf")
-par(mfrow = c(2,1))
-z=1
-for(i in files) {
-  temp <- subset(shannonentropy.by.cell, shannonentropy.by.cell$Name == i)
-  plot(temp$Value, type ="l", xlab = "Cell file position", ylab="Shannon-Entropy value",
-       main= i, col= my_palette[z], lwd = 2)
-  z = z +1
-}
-dev.off()
-######
+#######
 #Small subset
 shannon_subset<-subset(shannonentropy.by.cell, Name == "probLsystem_edited_cells.txt" | Name=="974_edited_cells.txt" |
                          Name == "EPM10_edited_cells.txt")
@@ -322,88 +311,3 @@ boxplot(shannonentropy.by.cell_subset$Value ~ shannonentropy.by.cell_subset$habi
         las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4)
 dev.off()    
 
-#######Checkout files with ray cells########
-shannonentropy.by.cell.with.ray <- read.csv("Data/shannonentropywithR.csv", row.names=1)
-
-#Add species and habit
-match.id <- match(shannonentropy.by.cell.with.ray$Name,species.id$files)
-shannonentropy.by.cell.with.ray$species <- as.character(species.id$species[match.id])
-shannonentropy.by.cell.with.ray$habit <- as.character(species.id$habit[match.id])
-
-boxplot(shannonentropy.by.cell.with.ray$Value ~ shannonentropy.by.cell.with.ray$Name,
-        col=colores,las=1.5, xlab="Average Cell-file Shannon-Entropy",ylab = NULL, cex=0.4,
-        cex.names=0.5, cex.axis=0.3, cex.lab=1.2)
-
-plot(shannonentropy.by.cell.with.ray$Value[shannonentropy.by.cell.with.ray$Name=="974_edited_cells.txt"],
-     type ="l", xlab="Compression distance")
-lines(shannonentropy.by.cell$Value[shannonentropy.by.cell$Name=="974_edited_cells.txt"],
-      type ="l", col =my_palette[2])
-######Check out Shanon by window #####
-shannonentropy.by.window <- read.csv("Data/shannonentropy_window.csv", row.names=1)
-library(dplyr)
-shannonentropy.by.window <- shannonentropy.by.window %>%
-  group_by(Sample,Lineage) %>% mutate(id = row_number())
-
-write.csv(shannonentropy.by.window, "Data/shannonentropy_window_id.csv")
-window947 <- subset(shannonentropy.by.window, Sample == "974_edited_cells.txt")
-window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
-window883 <- subset(shannonentropy.by.window, Sample == "883_edited_cells.txt")
-windowepm10 <- subset(shannonentropy.by.window, Sample == "EPM10_edited_cells.txt")
-prbeta <-subset(shannonentropy.by.window, Sample == "probLsystembeta_edited_cells.txt")
-#PLot every sample
-samples<-factor(shannonentropy.by.window$Sample)
-for (i in samples){
-  plot(shannonentropy.by.window$id[shannonentropy.by.window==i],
-       shannonentropy.by.window$Value[shannonentropy.by.window==i],type = "l",lwd = 3)
-}
-plot(window947$id,window947$Value,type = "l")
-plot(window947$id[window947$Lineage==26],window947$Value[window947$Lineage==26],type = "l",lwd = 2,
-     xlab="Window position",ylab = "Shannon Value")
-
-lineage<-factor(windowepm10$Lineage)
-for (i in lineage){
-  points(windowepm10$id[windowepm10$Lineage==i], windowepm10$Value[windowepm10$Lineage==i],
-         col="green",type = "l",lwd = 3,
-         col=pal1)
-}
-plot(windowepm10$id,windowepm10$Value, type = "l",col=pal1)
-plot(window883$id,window883$Value,type = "l",lwd = 3)
-
-
-pdf("Figures/shannon_window947.pdf")
-plot(window947$id[window947$Lineage==2],window947$Value[window947$Lineage==2],type = "l",lwd = 3)
-points(window947$id[window947$Lineage==3],window947$Value[window947$Lineage==3], col="green",type = "l",lwd = 3)
-points(window947$id[window947$Lineage==4],window947$Value[window947$Lineage==4], col="red",type = "l",lwd = 3)
-points(window947$id[window947$Lineage==5],window947$Value[window947$Lineage==5], col=pal1[1],type = "l",lwd = 3)
-points(window947$id[window947$Lineage==6],window947$Value[window947$Lineage==6], col=pal1[2],type = "l",lwd = 3)
-#points(window947$id[window947$Lineage==7],window947$Value[window947$Lineage==7], col=pal1[3],pch=19)
-#points(window947$id[window947$Lineage==8],window947$Value[window947$Lineage==8], col=pal2[1],pch=19)
-#points(window947$id[window947$Lineage==9],window947$Value[window947$Lineage==9], col=pal2[2],pch=19)
-#points(window947$id[window947$Lineage==10],window947$Value[window947$Lineage==10], col=pal2[3],pch=19)
-dev.off()
-
-pdf("Figures/shannon_window883.pdf")
-plot(window883$id[window883$Lineage==3],window883$Value[window883$Lineage==3],type = "l",lwd = 3)
-points(window883$id[window883$Lineage==2],window883$Value[window883$Lineage==2], col="green",type = "l",lwd = 3)
-points(window883$id[window883$Lineage==6],window883$Value[window883$Lineage==6], col="red",type = "l",lwd = 3)
-points(window883$id[window883$Lineage==4],window883$Value[window883$Lineage==4], col=pal1[1],type = "l",lwd = 3)
-points(window883$id[window883$Lineage==7],window883$Value[window883$Lineage==7], col=pal1[2],type = "l",lwd = 3)
-dev.off()
-
-pdf("Figures/probetaS.pdf")
-plot(prbeta$id[prbeta$Lineage==6],prbeta$Value[prbeta$Lineage==6],type = "l",lwd = 3)
-points(prbeta$id[prbeta$Lineage==2],prbeta$Value[prbeta$Lineage==2], col="green",type = "l",lwd = 3)
-points(prbeta$id[prbeta$Lineage==1],prbeta$Value[prbeta$Lineage==1], col="red",type = "l",lwd = 3)
-points(prbeta$id[prbeta$Lineage==4],prbeta$Value[prbeta$Lineage==4], col=pal1[1],type = "l",lwd = 3)
-points(prbeta$id[prbeta$Lineage==7],prbeta$Value[prbeta$Lineage==7], col=pal1[2],type = "l",lwd = 3)
-dev.off()
-
-summary(cell_lengths)
-
-ggplot(window947, aes(x= id, y = Value, color=Lineage)) +
-  geom_point()
-
-ggplot(lempel.by.cell, aes(x = Name, y = Value, color = species)) + geom_boxplot()
-
-
-                         

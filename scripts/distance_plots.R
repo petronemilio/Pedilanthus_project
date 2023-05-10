@@ -458,7 +458,7 @@ png("Figures/upgmaStandarized_19.png") # Para guardar en PDF
 plot(tree19)
 dev.off()
 #################################################################
-###Make the same for word counts with appearing also one time###
+###Make the same for word counts with appearing also only one time###
 summary(maxwords$X)
 wc.12 <- as.matrix(read.csv("Data/word_counts_all/wordcounts12.csv",row.names=1))
 wc.12[is.na(wc.12)] <- 0

@@ -201,78 +201,7 @@ sum(as.numeric(tipos_celulares_withoutLS$numberofFiles))
 tipos_celulares_freq$numberofFiles <- as.character(numberofcells[match.id])
 tipos_celulares_freq$numberofFiles <- as.character(numberofcells[match.id])
 
-#
-#Reshape dat to plot
-tipos_celulares <- reshape(data=tipos_celulares, idvar="x", varying = c("V","F","P","R"),
-        times=c("V","F","P","R"),v.name=c("Count"),direction="long")
-#
-ggplot(tipos_celulares) + 
-  geom_bar(mapping=aes(x = Sample, y = Count, fill= time), stat = "identity",
-           position = "fill") +coord_flip()
-pdf("Figures/count_freqs.pdf")
-ggplot(tipos_celulares) + 
-  geom_bar(mapping=aes(x = species , y = Count, fill= time), stat = "identity",
-           position = "fill") +coord_flip()
-dev.off()
-##
-tipos_celulares_freq <- reshape(data=tipos_celulares_freq, idvar="x", varying = c("V","F","P","R"),
-                           times=c("V","F","P","R"),v.name=c("Count"),direction="long")
-#
-#### Make plots removing cell rays #####
-tipos_fusiformes <- subset(tipos_celulares, time != "R")
-tipos_fusiformes$countfreq <-tipos_fusiformes$Count/tipos_fusiformes$totalcells
-#tipos_fusiformes <-order(tipos_fusiformes$time)
-tipos_fusiformes<-tipos_fusiformes[with(tipos_fusiformes, order(time,countfreq)), ]
-ggplot(tipos_fusiformes) + 
-  geom_bar(mapping=aes(x =species, y = countfreq, fill= time), stat = "identity",
-           position = "fill") + coord_flip()
-ggplot(tipos_fusiformes,aes(x =species, y = countfreq, fill= time))+ 
-  geom_col(position = position_fill(reverse = TRUE)) + coord_flip()
-
-pdf("Figures/count_freqs_fusiform.pdf")
-ggplot(tipos_fusiformes) + 
-  geom_bar(mapping=aes(x =species, y = Count, fill= time), 
-           stat = "identity", position = "fill") + coord_flip()
-dev.off()
-##
-tipos_celulares_freq <- tipos_celulares[,c(2:5,7)] / tipos_celulares[,7] 
-tipos_celulares_freq$sample <- tipos_celulares$Sample
-tipos_celulares_freq$species <- as.character(species.id$species[match.id])
-
-#####Make statistical test #####
-tipos_celulares <- read.csv("Data/wordcountsR1.csv", row.names = 1)
-tipos_celulares <-subset(tipos_celulares, select= -R)
-contingency_table <-addmargins(as.matrix(tipos_celulares))
-#
-tipos_celulares_chi<-chisq.test(contingency_table)
-#####
-tipos_celulares_chi$expected
-#Gtest
-library(DescTools)
-tipos_celulares.gi <- GTest(contingency_table)
-tipos_celulares_chi$stdres
-#
-library(vcd) # useful package for graphics, beyond scope of this book
-
-png("Figures/contingency_table.png")
-mosaic(as.matrix(tipos_celulares), gp=shading_Friendly, residuals=tipos_celulares_chi$stdres,
-       residuals_type="Std\nresiduals", labeling=labeling_residuals)
-dev.off()
-tipos_celulares_chi
-#library(RVAideMemoire)
-#chisq.multcomp(contingency_table, p.method = "none")
-
-####
-lvls <- names(sort(tapply(tipos_fusiformes$time == "Fibras", tipos_fusiformes$especies_por_muestra, mean)))
-lvls
-ggplot(tipos_fusiformes)+ geom_bar(aes(factor(especies_por_muestra, levels = lvls),
-           stat="identity")) 
-  #geom_bar(position = "fill") + scale_y_continuous(labels = count)
-
-#ggplot(data=dat1, aes(x=time, y=total_bill, fill=sex)) +
-#  geom_bar(stat="identity")
-
-##########Graficar los indices de homogeneídad ##########
+###########Graficar los indices de homogeneídad ##########
 #
 homogenity_index <- read.csv("Data/homogentiy_index.csv")
 #Take files as factor  
@@ -285,33 +214,7 @@ match.id <- match(homogenity_index$X0,species.id$files)
 homogenity_index$sp <- as.character(species.id$species[match.id])
 #    
 homogenity_index$habit <- as.character(species.id$habit[match.id])
-####
-#Calc the length proportion standaridze per sample...
-prueba<-homogenity_index %>% group_by(X0) %>%
-  top_n(1, length) 
-prueba <- prueba[!duplicated(prueba[ , c("X0", "length")]), ]  # Delete rows
-matcher <- match(homogenity_index$X0, prueba$X0)
-homogenity_index$maxlength<- prueba$length[matcher]
-homogenity_index$lengthstd <- (homogenity_index$length)/(homogenity_index$maxlength)
-
-ggplot(homogenity_index, aes(x=support, y=conductivity, colour=sp))+
-  geom_point() #+ scale_color_manual(values=my_palette)
-ggplot(homogenity_index, aes(x=conductivity, y=support, colour=habit))+
-  geom_point() #+ scale_color_manual(values=my_palette)
-
-ggplot(homogenity_index, aes(x=lengthstd, y=conductivity, colour=habit))+
-  geom_point() #+ scale_color_manual(values=my_palette)
-
-pdf("Figures/storage_conductivity.pdf") # Para guardar en PDF
-ggplot(homogenity_index, aes(x=storage, y=conductivity, colour=habit))+
-  geom_point() + scale_color_manual(values=c(pal3,pal2))
-dev.off()
-#
-pdf("Figures/storage_support.pdf") # Para guardar en PDF
-ggplot(homogenity_index, aes(x=storage, y=support, colour=habit))+
-  geom_point() + scale_color_manual(values=c(pal3,pal4))
-dev.off()
-#
+#####
 species_index <- subset(homogenity_index, habit == "xeric" | habit == "mesic" | habit=="probetaL-system")
 pdf("Figures/support_conductivity.pdf") # Para guardar en PDF
 ggplot(species_index, aes(x=conductivity, y=support, colour=sp))+
@@ -323,21 +226,6 @@ ggplot(species_index, aes(x=conductivity, y=support, colour=habit))+
   geom_point() +  scale_color_manual(values=c(my_palette))
 dev.off()
 ######
-pdf("Figures/3dscatter.pdf")
-scatter3D(homogenity_index$storage,homogenity_index$conductivity,
-          homogenity_index$support, 
-          col.var = as.integer(as.factor(homogenity_index$habit)), 
-          col = pal3, 
-          pch = 4, ticktype = "detailed",
-          colkey = list(at = c(2,3,4,5,6)), side = 1,addlines = TRUE, length = 0.5, width = 0.5,
-          labels = c("mesic","xeric","L-system","L-systemCSX","L-systemCSM"),
-          #id=list(method = "mahal", n = length(homogenity_index$habit), 
-           #       labels = homogenity_index$habit),
-          phi = 0, bty ="g",
-          main = "Homogenity index", xlab = "Storage index",
-          ylab ="Conductivity index", zlab = "Support index")
-dev.off()
-
 pal3 <-pal3[as.numeric(as.factor(homogenity_index$habit))]
 pdf("Figures/morphospace1.pdf")
 scatterplot3d(homogenity_index$storage,homogenity_index$conductivity,
@@ -349,29 +237,7 @@ legend("bottom", legend = c("mesic","xeric","L-system","L-systemCSX","L-systemCS
 dev.off()
 levels(as.factor(homogenity_index$habit))
 
-pdf("Figures/morphospace2.pdf")
-scatterplot3d(homogenity_index$storage,homogenity_index$support,
-              homogenity_index$conductivity,
-               angle=55, pch=16, color=pal3,
-              main="3D Scatter Plot",xlab = "Storage index",ylab = "Support index",
-              zlab = "Conductivity index") 
-legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
-       col =levels(as.factor(pal3)) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
-dev.off()
-
-scatter3D(homogenity_index$storage,homogenity_index$conductivity,
-          homogenity_index$support, phi = 0, bty ="g",
-          id=list(method = "mahal", n = length(as.factor(homogenity_index$habit)),
-                  labels = as.factor(homogenity_index$habit)))
-#
-plot3d(geometry[,1],geometry[,2],geometry[,3])
-text3d(geometry[,1],geometry[,2],geometry[,3],rownames(geometry))
-points3d(geometry[,1],geometry[,2],geometry[,3], size = 5)
-
-#scale_color_manual(values=c("#c80966","#84de66","#8369e1","#d89816",
- #                             "#0152a1","#005e18","#abb2ff"))+
-  #theme_bw()
-
+####
 homogenity_index <- subset(homogenity_index, homogenity_index$habit != "L-systemCSM" & 
          homogenity_index$habit != "L-systemCSX" & homogenity_index$habit != "RayL-system" ) 
 ###Plot using length
@@ -481,35 +347,3 @@ table(homogeneity_index_lsystems$support > 0.0 &
         homogeneity_index_lsystems$support < 0.5)
 
 #
-pal4 <-my_palette[as.numeric(as.factor(homogenity_index_subset$habit))]
-pdf("Figures/morphospace_length.pdf")
-scatterplot3d(homogenity_index_subset$length,homogenity_index_subset$conductivity,
-              homogenity_index_subset$support,
-              angle=35, pch=16, color=pal4,
-              main="3D Scatter Plot",xlab = "Cell length",ylab = "Support index",
-              zlab = "Conductivity index") 
-legend("bottom", legend = levels(as.factor(homogenity_index_subset$habit)),
-       col =c("#273046", "#CB2314", "#FAD510") , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
-dev.off()
-scatterplot3d(homogenity_index$support,homogenity_index$conductivity,
-              homogenity_index$length,
-              angle=40, pch=16, color=pal3,
-              main="3D Scatter Plot",xlab = "Cell length",ylab = "Support index",
-              zlab = "Conductivity index") 
-legend("bottom", legend = levels(as.factor(homogenity_index$habit)),
-       col =levels(as.factor(pal3)) , pch = 16, inset =-0.15,xpd=TRUE,horiz=TRUE)
-#
-scatter3D(homogenity_index$length,homogenity_index$conductivity,
-          homogenity_index$support, 
-          col.var = as.integer(as.factor(homogenity_index$habit)), 
-          col = pal3, 
-          pch = 4, ticktype = "detailed",
-          colkey = list(at = c(2,3,4,5,6)), side = 1,addlines = TRUE, length = 0.5, width = 0.5,
-          labels = c("mesic","xeric","L-system","L-systemCSX","L-systemCSM"),
-          id=list(method = "mahal", n = length(homogenity_index$habit), 
-                 labels = homogenity_index$habit),
-          phi = 0, bty ="g",
-          main = "Homogenity index", xlab = "Cell length
-          ",
-          ylab ="Conductivity index", zlab = "Support index")
-#####Load file with info about cell lengthHIco
